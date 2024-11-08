@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
 from Accounts.manager import UserManager
+from Doctor.models import DoctorModel
 
 
 class User(AbstractBaseUser):
@@ -13,7 +14,6 @@ class User(AbstractBaseUser):
     birthday = jmodel.jDateField(null=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['last_name', 'first_name']
     object = UserManager()
@@ -26,7 +26,6 @@ class User(AbstractBaseUser):
 
     def is_staff(self):
         return self.is_admin
-
 
     @property
     def full_name(self):

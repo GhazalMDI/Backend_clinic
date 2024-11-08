@@ -1,3 +1,7 @@
 from django.contrib import admin
+from Department.models import *
 
-# Register your models here.
+
+@admin.register(DepartmentModel)
+class DepartmentModelAdmin(admin.ModelAdmin):
+    fields = ('title', 'description', 'image')
