@@ -10,3 +10,7 @@ class BannerModelAdmin(admin.ModelAdmin):
 @admin.register(ImageModel)
 class ImageAdmin(admin.ModelAdmin):
     fields = ('type', 'img', 'about')
+
+@admin.register(AboutUsModel)
+class AboutUsModelAdmin(admin.ModelAdmin):
+    fields = ('title', 'description')

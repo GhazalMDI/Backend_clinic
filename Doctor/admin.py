@@ -1,10 +1,11 @@
+import requests
 from django.contrib import admin
 from django import forms
 from django_jalali import forms as jforms
-from Accounts.models import User
 from django.core.exceptions import ValidationError
 
 from Doctor.models import *
+from Accounts.models import User
 
 
 class DoctorModelForm(forms.ModelForm):
@@ -30,12 +31,6 @@ class DoctorModelForm(forms.ModelForm):
         else:
             print('No user instance found')
 
-    def clean_phone_number(self):
-        phone_number = self.cleaned_data.get('phone_number')
-        if User.object.filter(phone_number=phone_number).exists():
-            raise forms.ValidationError('لطفا شماره تلفن صحیح وارد نمایید')
-        return phone_number
-
     def save(self, commit=True):
         doctor_instance = super().save(commit=False)
         if not doctor_instance.user:
@@ -48,19 +43,32 @@ class DoctorModelForm(forms.ModelForm):
         user.birthday = self.cleaned_data.get('birthday')
         user.is_active = self.cleaned_data.get('is_active')
         user.save()
-
         if not doctor_instance:
             doctor_instance.user = user
         if commit:
             doctor_instance.save()
         return doctor_instance
 
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if User.object.filter(phone_number=phone_number).exists():
+            raise forms.ValidationError('لطفا شماره تلفن صحیح وارد نمایید')
+        return phone_number
+
 
 @admin.register(DoctorModel)
 class DoctorModelAdmin(admin.ModelAdmin):
     form = DoctorModelForm
 
-    def get_user_last_name(self, obj):
-        return obj.user.last_name if obj.user else '-'
 
-    get_user_last_name.short_description = 'Last Name'
+class EducationModelAdminForm(forms.ModelForm):
+    university = forms.ChoiceField(choices=EducationDetailsModel.choicies_uni(), required=True)
+
+    class Meta:
+        model = EducationDetailsModel
+        fields = '__all__'
+
+
+@admin.register(EducationDetailsModel)
+class EducationDetailsModelAdmin(admin.ModelAdmin):
+    form = EducationModelAdminForm

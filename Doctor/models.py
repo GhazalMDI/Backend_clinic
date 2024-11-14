@@ -1,5 +1,6 @@
 from django.db import models
 from Department.models import DepartmentModel
+import requests
 
 
 class DoctorModel(models.Model):
@@ -8,3 +9,28 @@ class DoctorModel(models.Model):
                                 blank=True)
     department = models.ForeignKey('Department.DepartmentModel', models.SET_NULL, 'department_doctors', null=True,
                                    blank=True)
+
+    landline_phone = models.CharField(max_length=11, null=True)
+    medical_license_number = models.CharField(max_length=5, null=True)
+    bio = models.TextField(null=True)
+
+
+class EducationDetailsModel(models.Model):
+    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,
+                                       related_name='academic_to_education')
+    university = models.CharField(max_length=255, null=True)
+    # graduation_year =  models
+
+
+
+    @classmethod
+    def choicies_uni(cls):
+        url = 'https://raw.githubusercontent.com/Hipo/university-domains-list/refs/heads/master/world_universities_and_domains.json'
+        response = requests.get(url)
+        university = response.json()
+        university_choices = [(uni['name'], uni['name']) for uni in university if uni.get('country') == 'Iran']
+        return university_choices
+
+
+class AcademicFieldModel(models.Model):
+    name = models.CharField(max_length=150)

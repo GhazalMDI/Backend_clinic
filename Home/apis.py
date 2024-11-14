@@ -1,10 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from Home.serializers import BannerSerializers
-from Home.models import BannerModel, ImageModel
-from AboutUs.models import AboutUsModel
-from AboutUs.serializers import AboutUsSerializers, ImageSerializers
+from Home.serializers import BannerSerializers , AboutUsSerializers ,ImageSerializers
+from Home.models import BannerModel, ImageModel ,AboutUsModel
 from Department.serializers import DepartmentSerializers
 from Department.models import DepartmentModel
 
