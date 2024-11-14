@@ -62,13 +62,32 @@ class DoctorModelAdmin(admin.ModelAdmin):
 
 
 class EducationModelAdminForm(forms.ModelForm):
-    university = forms.ChoiceField(choices=EducationDetailsModel.choicies_uni(), required=True)
+    university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
+    # country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     country = self.initial.get('country') or self.data.get('country')
+    #     if country:
+    #         print('hi')
+    #         self.fields['university'].choices = EducationDetailsModel.choices_uni(country)
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #    #     if 'country' in self.data:
+    #         country_selected = self.data.get('country')
+    #         self.fields['university'].choices = EducationDetailsModel.choices_uni(country=country_selected)
 
     class Meta:
         model = EducationDetailsModel
         fields = '__all__'
 
 
+
+
+
+
 @admin.register(EducationDetailsModel)
 class EducationDetailsModelAdmin(admin.ModelAdmin):
     form = EducationModelAdminForm
+    list_display = ('academic_field','university','graduation_year','doctor')

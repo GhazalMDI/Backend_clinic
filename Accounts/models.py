@@ -12,6 +12,7 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=25)
     last_name = models.CharField(max_length=55)
     birthday = jmodel.jDateField(null=True)
+    national_code = models.CharField(max_length=10,null=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     USERNAME_FIELD = 'phone_number'
