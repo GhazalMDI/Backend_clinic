@@ -63,20 +63,11 @@ class DoctorModelAdmin(admin.ModelAdmin):
 
 class EducationModelAdminForm(forms.ModelForm):
     university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
-    # country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
+    country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     country = self.initial.get('country') or self.data.get('country')
-    #     if country:
-    #         print('hi')
-    #         self.fields['university'].choices = EducationDetailsModel.choices_uni(country)
+    class Media:
+        js = ('js/adminPanel.js',)
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #    #     if 'country' in self.data:
-    #         country_selected = self.data.get('country')
-    #         self.fields['university'].choices = EducationDetailsModel.choices_uni(country=country_selected)
 
     class Meta:
         model = EducationDetailsModel

@@ -138,6 +138,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# STATICFILES_DIRS
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -146,10 +148,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'Accounts.User'
 
 
-STORAGES = {
-    'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
-    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}
-}
+# STORAGES = {
+#     'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+#     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}
+# }
 
 AWS_ACCESS_KEY_ID = '2923546e-8ad3-4a62-8e22-208cce72b01a'
 AWS_SECRET_ACCESS_KEY = '815be517d25ba472ca30eaac5971620c44e872265bd2399698b36259442b332c'
