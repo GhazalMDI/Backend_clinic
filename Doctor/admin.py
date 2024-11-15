@@ -56,29 +56,37 @@ class DoctorModelForm(forms.ModelForm):
         return phone_number
 
 
-@admin.register(DoctorModel)
-class DoctorModelAdmin(admin.ModelAdmin):
-    form = DoctorModelForm
-
-
 class EducationModelAdminForm(forms.ModelForm):
-    university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
     country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
+    university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
 
     class Media:
         js = ('js/adminPanel.js',)
 
-
     class Meta:
         model = EducationDetailsModel
-        fields = '__all__'
+        fields = ('doctor', 'academic_field', 'country', 'university', 'graduation_year')
 
 
+class CertificateStackedInline(admin.StackedInline):
+    model = CertificateModel
+    list_display = (
+        'doctor', 'certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
+    extra = 1
 
 
-
-
-@admin.register(EducationDetailsModel)
-class EducationDetailsModelAdmin(admin.ModelAdmin):
+class EducationDetailsStackedInline(admin.StackedInline):
     form = EducationModelAdminForm
-    list_display = ('academic_field','university','graduation_year','doctor')
+    model = EducationDetailsModel
+    list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
+    extra = 1
+
+
+@admin.register(DoctorModel)
+class DoctorModelAdmin(admin.ModelAdmin):
+    form = DoctorModelForm
+    inlines = [CertificateStackedInline, EducationDetailsStackedInline]
+
+
+admin.site.register(CertificateModel)
+admin.site.register(EducationDetailsModel)

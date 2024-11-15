@@ -1,4 +1,3 @@
-alert('hi')
 document.addEventListener('DOMContentLoaded', function() {
     const countryField = document.querySelector('#id_country');
     const universityField = document.querySelector('#id_university');
@@ -9,16 +8,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 const filteredUniversities = data.filter(uni => uni.country === selectedCountry);
-
                 universityField.innerHTML = '';
 
                 filteredUniversities.forEach(uni => {
                     const option = document.createElement('option');
                     option.value = uni.name;
                     option.textContent = uni.name;
+                    option.id = uni.country;
                     universityField.appendChild(option);
                 });
             })
             .catch(error => console.error('Error fetching universities:', error));
     });
 });
+
+
+
