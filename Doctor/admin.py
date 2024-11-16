@@ -56,6 +56,13 @@ class DoctorModelForm(forms.ModelForm):
         return phone_number
 
 
+class CertificateStackedInline(admin.StackedInline):
+    model = CertificateModel
+    list_display = (
+        'doctor', 'certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
+    extra = 1
+
+
 class EducationModelAdminForm(forms.ModelForm):
     country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
     university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
@@ -68,25 +75,26 @@ class EducationModelAdminForm(forms.ModelForm):
         fields = ('doctor', 'academic_field', 'country', 'university', 'graduation_year')
 
 
-class CertificateStackedInline(admin.StackedInline):
-    model = CertificateModel
-    list_display = (
-        'doctor', 'certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
-    extra = 1
-
-
-class EducationDetailsStackedInline(admin.StackedInline):
+@admin.register(EducationDetailsModel)
+class EducationDetailsModelAdmin(admin.ModelAdmin):
     form = EducationModelAdminForm
+    list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
+
+
+class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
+    class Media:
+        js = ('js/adminPanel.js',)
     model = EducationDetailsModel
+    form = EducationModelAdminForm
     list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
     extra = 1
+
 
 
 @admin.register(DoctorModel)
 class DoctorModelAdmin(admin.ModelAdmin):
     form = DoctorModelForm
-    inlines = [CertificateStackedInline, EducationDetailsStackedInline]
+    inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin]
 
 
 admin.site.register(CertificateModel)
-admin.site.register(EducationDetailsModel)
