@@ -17,11 +17,13 @@ class DoctorModel(models.Model):
 
 
 class EducationDetailsModel(models.Model):
-    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,related_name='academic_to_education')
+    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,
+                                       related_name='academic_to_education')
     university = models.CharField(max_length=255, null=True)
     graduation_year = models.IntegerField(null=True)
     doctor = models.ForeignKey('DoctorModel', related_name='doctor_education', on_delete=models.PROTECT, null=True)
     country = models.CharField(max_length=150, null=True)
+
     @classmethod
     def choices_country(cls):
         url = 'https://restcountries.com/v3.1/all'
@@ -31,6 +33,7 @@ class EducationDetailsModel(models.Model):
             (c['name']['common'], c['name']['common']) for c in countries
         ]
         return countries_choices
+
     @classmethod
     def choices_uni(cls):
         url = 'https://raw.githubusercontent.com/Hipo/university-domains-list/refs/heads/master/world_universities_and_domains.json'
@@ -56,6 +59,18 @@ class CertificateModel(models.Model):
     additional_details = models.TextField()
 
 
-class MedicalSpecialtiesModel(models.Model):
-    
+class MedicalSpecialtyModel(models.Model):
+    name = models.CharField(max_length=150)
+    description = models.TextField(null=True, blank=True)
+    department = models.ForeignKey('Department.DepartmentModel', related_name='department_medical_special',
+                                   on_delete=models.PROTECT)
 
+    def __str__(self):
+        return self.name
+
+
+class DetailsMedicalSpecialty(models.Model):
+    specialty = models.ManyToManyField('MedicalSpecialtyModel', related_name='Details_Medical_Specialty_related')
+    years_of_experience = jmodel.jDateField()
+    description = models.TextField(null=True, blank=True)
+    doctor = models.ForeignKey('DoctorModel', models.PROTECT, 'doctor_medical_specialty')

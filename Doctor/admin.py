@@ -84,17 +84,27 @@ class EducationDetailsModelAdmin(admin.ModelAdmin):
 class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
     class Media:
         js = ('js/adminPanel.js',)
+
     model = EducationDetailsModel
     form = EducationModelAdminForm
     list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
     extra = 1
 
 
-
 @admin.register(DoctorModel)
 class DoctorModelAdmin(admin.ModelAdmin):
     form = DoctorModelForm
     inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin]
+
+
+@admin.register(MedicalSpecialtyModel)
+class MedicalSpecialtyModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'department', 'description')
+
+
+@admin.register(DetailsMedicalSpecialty)
+class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
+    list_display = ('doctor', 'years_of_experience', 'description')
 
 
 admin.site.register(CertificateModel)
