@@ -15,11 +15,10 @@ class DoctorModel(models.Model):
     medical_license_number = models.CharField(max_length=5, null=True)
     bio = models.TextField(null=True)
 
-
-    # def user_name(self):
-    #     if self.user and self.user.first_name :
-    #         return self.user.first_name
-
+    def __str__(self):
+        if self.user and self.user.first_name and self.user.last_name:
+            return f'{self.user.first_name} {self.user.last_name}'
+        return 'دکتر'
 
 
 class EducationDetailsModel(models.Model):
@@ -76,7 +75,11 @@ class MedicalSpecialtyModel(models.Model):
 
 
 class DetailsMedicalSpecialty(models.Model):
-    specialty = models.ManyToManyField('MedicalSpecialtyModel', related_name='Details_Medical_Specialty_related')
+    specialty = models.ForeignKey('MedicalSpecialtyModel', related_name='Details_Medical_Specialty_related',on_delete=models.SET_NULL, null=True)
     years_of_experience = jmodel.jDateField()
     description = models.TextField(null=True, blank=True)
     doctor = models.ForeignKey('DoctorModel', models.PROTECT, 'doctor_medical_specialty')
+
+
+class WorkingHourModel(models.Model):
+    DAYS =

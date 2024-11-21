@@ -39,7 +39,9 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'django_jalali',
-    'boto3'
+    'boto3',
+    'dal',
+    'dal_select2',
 ]
 LOCAL_APPS = [
     'Home.apps.HomeConfig',

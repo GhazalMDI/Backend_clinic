@@ -3,6 +3,7 @@ from django.contrib import admin
 from django import forms
 from django_jalali import forms as jforms
 from django.core.exceptions import ValidationError
+from dal import autocomplete
 
 from Doctor.models import *
 from Accounts.models import User
@@ -14,7 +15,6 @@ class DoctorModelForm(forms.ModelForm):
     phone_number = forms.CharField(label='Phone Number', max_length=11, required=True)
     is_active = forms.BooleanField(label='is_Active')
     birthday = jforms.jDateField(widget=forms.DateInput(attrs={'type': 'date'}))
-
 
     class Meta:
         model = DoctorModel
@@ -34,13 +34,17 @@ class DoctorModelForm(forms.ModelForm):
 
     def save(self, commit=True):
         doctor_instance = super().save(commit=False)
+        # if not doctor_instance.user:
         user = doctor_instance.user or User()
+        # elif doctor_instance.user:
+        #     user = doctor_instance.user
         user.first_name = self.cleaned_data.get('first_name')
         user.last_name = self.cleaned_data.get('last_name')
         user.phone_number = self.cleaned_data.get('phone_number')
         user.birthday = self.cleaned_data.get('birthday')
         user.is_active = self.cleaned_data.get('is_active')
         user.save()
+        # if not doctor_instance:
         doctor_instance.user = user
         if commit:
             doctor_instance.save()
@@ -48,8 +52,15 @@ class DoctorModelForm(forms.ModelForm):
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
-        if User.object.filter(phone_number=phone_number).exists():
-            raise forms.ValidationError('لطفا شماره تلفن صحیح وارد نمایید')
+        # بررسی اینکه شماره تلفن فعلی همان شماره تلفن قبلی است
+        if self.instance.user:
+            existing_user = User.object.filter(phone_number=phone_number).exclude(id=self.instance.user.id)
+        else:
+            existing_user = User.object.filter(phone_number=phone_number)
+
+        if existing_user.exists():
+            raise forms.ValidationError('شماره تلفن وارد شده قبلاً ثبت شده است.')
+
         return phone_number
 
 
@@ -57,7 +68,7 @@ class CertificateStackedInline(admin.StackedInline):
     model = CertificateModel
     list_display = (
         'doctor', 'certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
-    extra = 1
+    extra = 0
 
 
 class EducationModelAdminForm(forms.ModelForm):
@@ -85,7 +96,7 @@ class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
     model = EducationDetailsModel
     form = EducationModelAdminForm
     list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
-    extra = 1
+    extra = 0
 
 
 @admin.register(DoctorModel)
@@ -100,12 +111,20 @@ class MedicalSpecialtyModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'department', 'description')
 
 
+class DetailsMedicalSpecialtyForm(forms.ModelForm):
+    class Meta:
+        model = DetailsMedicalSpecialty
+        fields = '__all__'
+        widgets = {
+            'specialty': autocomplete.ModelSelect2(
+                url='specialty-autocomplete',
+                forward=['doctor']
+            )
+        }
+
 @admin.register(DetailsMedicalSpecialty)
 class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
-
-
-    list_display = ('doctor', 'years_of_experience', 'description')
-
+    form = DetailsMedicalSpecialtyForm
 
 
 

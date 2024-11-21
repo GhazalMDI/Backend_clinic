@@ -3,7 +3,8 @@ from django.urls import path, include
 
 API_URLS = [
     path('', include('Home.urls', namespace='Home')),
-    path('Department/', include('Department.urls'))
+    path('Department/', include('Department.urls')),
+    path('Doctor/',include('Doctor.urls'))
 ]
 
 urlpatterns = [
