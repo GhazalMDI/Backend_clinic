@@ -16,6 +16,12 @@ class DoctorModel(models.Model):
     bio = models.TextField(null=True)
 
 
+    # def user_name(self):
+    #     if self.user and self.user.first_name :
+    #         return self.user.first_name
+
+
+
 class EducationDetailsModel(models.Model):
     academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,
                                        related_name='academic_to_education')

@@ -15,6 +15,7 @@ class DoctorModelForm(forms.ModelForm):
     is_active = forms.BooleanField(label='is_Active')
     birthday = jforms.jDateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
+
     class Meta:
         model = DoctorModel
         fields = ['image', 'department', 'first_name', 'last_name', 'phone_number', 'is_active', 'birthday']
@@ -33,18 +34,14 @@ class DoctorModelForm(forms.ModelForm):
 
     def save(self, commit=True):
         doctor_instance = super().save(commit=False)
-        if not doctor_instance.user:
-            user = User()
-        elif doctor_instance.user:
-            user = doctor_instance.user
+        user = doctor_instance.user or User()
         user.first_name = self.cleaned_data.get('first_name')
         user.last_name = self.cleaned_data.get('last_name')
         user.phone_number = self.cleaned_data.get('phone_number')
         user.birthday = self.cleaned_data.get('birthday')
         user.is_active = self.cleaned_data.get('is_active')
         user.save()
-        if not doctor_instance:
-            doctor_instance.user = user
+        doctor_instance.user = user
         if commit:
             doctor_instance.save()
         return doctor_instance
@@ -95,6 +92,7 @@ class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
 class DoctorModelAdmin(admin.ModelAdmin):
     form = DoctorModelForm
     inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin]
+    # list_display = (' ',)
 
 
 @admin.register(MedicalSpecialtyModel)
@@ -104,7 +102,11 @@ class MedicalSpecialtyModelAdmin(admin.ModelAdmin):
 
 @admin.register(DetailsMedicalSpecialty)
 class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
+
+
     list_display = ('doctor', 'years_of_experience', 'description')
+
+
 
 
 admin.site.register(CertificateModel)

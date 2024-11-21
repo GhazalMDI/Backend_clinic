@@ -7,4 +7,5 @@ from Accounts.models import User
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     fields = ('first_name', 'last_name', 'phone_number', 'is_active', 'birthday')
+    list_display = ('first_name', 'last_name', 'phone_number', 'is_active', 'birthday')
 
