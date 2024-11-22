@@ -98,11 +98,15 @@ class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
     list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
     extra = 0
 
+class WorkingHourModelStackedInline(admin.StackedInline):
+    model = WorkingHourModel
+    extra = 1
+
 
 @admin.register(DoctorModel)
 class DoctorModelAdmin(admin.ModelAdmin):
     form = DoctorModelForm
-    inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin]
+    inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin,WorkingHourModelStackedInline]
     # list_display = (' ',)
 
 
@@ -122,10 +126,13 @@ class DetailsMedicalSpecialtyForm(forms.ModelForm):
             )
         }
 
+
 @admin.register(DetailsMedicalSpecialty)
 class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
     form = DetailsMedicalSpecialtyForm
 
 
 
+
 admin.site.register(CertificateModel)
+admin.site.register(WorkingHourModel)

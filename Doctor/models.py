@@ -75,11 +75,25 @@ class MedicalSpecialtyModel(models.Model):
 
 
 class DetailsMedicalSpecialty(models.Model):
-    specialty = models.ForeignKey('MedicalSpecialtyModel', related_name='Details_Medical_Specialty_related',on_delete=models.SET_NULL, null=True)
+    specialty = models.ForeignKey('MedicalSpecialtyModel', related_name='Details_Medical_Specialty_related',
+                                  on_delete=models.SET_NULL, null=True)
     years_of_experience = jmodel.jDateField()
     description = models.TextField(null=True, blank=True)
     doctor = models.ForeignKey('DoctorModel', models.PROTECT, 'doctor_medical_specialty')
 
 
 class WorkingHourModel(models.Model):
-    DAYS =
+    DAYS = (
+        ('SATURDAY', 'شنبه'),
+        ('SUNDAY', 'یکشنبه'),
+        ('MONDAY', 'دوشنبه'),
+        ('TUESDAY', 'سه شنبه'),
+        ('WEDNESDAY', 'چهارشنبه'),
+        ('THURSDAY', 'پنجشنبه'),
+        ('FRIDAY', 'جمعه')
+    )
+    DAYS = models.CharField(max_length=100, choices=DAYS, default='SATURDAY')
+    start = models.TimeField()
+    end = models.TimeField()
+    is_available = models.BooleanField(default=True)
+    doctor = models.ForeignKey('DoctorModel', related_name='doctor_working_hours', on_delete=models.PROTECT,null=True,blank=True)
