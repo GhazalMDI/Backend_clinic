@@ -15,6 +15,7 @@ class User(AbstractBaseUser):
     national_code = models.CharField(max_length=10,null=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    is_doctor = models.BooleanField(default=False)
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['last_name', 'first_name']
     object = UserManager()

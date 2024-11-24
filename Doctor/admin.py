@@ -15,6 +15,7 @@ class DoctorModelForm(forms.ModelForm):
     phone_number = forms.CharField(label='Phone Number', max_length=11, required=True)
     is_active = forms.BooleanField(label='is_Active')
     birthday = jforms.jDateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    is_doctor = forms.BooleanField(label='is_doctor')
 
     class Meta:
         model = DoctorModel
@@ -29,6 +30,7 @@ class DoctorModelForm(forms.ModelForm):
             self.fields['phone_number'].initial = self.instance.user.phone_number
             self.fields['is_active'].initial = self.instance.user.is_active
             self.fields['birthday'].initial = self.instance.user.birthday
+            self.fields['is_doctor'].initial = self.instance.user.is_doctor
         else:
             print('No user instance found')
 
@@ -43,6 +45,7 @@ class DoctorModelForm(forms.ModelForm):
         user.phone_number = self.cleaned_data.get('phone_number')
         user.birthday = self.cleaned_data.get('birthday')
         user.is_active = self.cleaned_data.get('is_active')
+        user.is_doctor = True
         user.save()
         # if not doctor_instance:
         doctor_instance.user = user
@@ -62,6 +65,16 @@ class DoctorModelForm(forms.ModelForm):
             raise forms.ValidationError('شماره تلفن وارد شده قبلاً ثبت شده است.')
 
         return phone_number
+
+
+class AppointmentAdminForm(forms.ModelForm):
+    class Meta:
+        model = AppointmentModel
+        fields = ('doctor', 'patient', 'time', 'date')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['patient'].queryset = User.object.filter(is_doctor=False)
 
 
 class CertificateStackedInline(admin.StackedInline):
@@ -98,6 +111,7 @@ class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
     list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
     extra = 0
 
+
 class WorkingHourModelStackedInline(admin.StackedInline):
     model = WorkingHourModel
     extra = 1
@@ -106,7 +120,7 @@ class WorkingHourModelStackedInline(admin.StackedInline):
 @admin.register(DoctorModel)
 class DoctorModelAdmin(admin.ModelAdmin):
     form = DoctorModelForm
-    inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin,WorkingHourModelStackedInline]
+    inlines = [CertificateStackedInline, EducationDetailsModelStackedInlineAdmin, WorkingHourModelStackedInline]
     # list_display = (' ',)
 
 
@@ -132,6 +146,11 @@ class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
     form = DetailsMedicalSpecialtyForm
 
 
+@admin.register(AppointmentModel)
+class AppointmentModelAdmin(admin.ModelAdmin):
+    form = AppointmentAdminForm
+    # fields = ('doctor', 'patient', 'date', 'time')
+    list_display = ('date', 'time')
 
 
 admin.site.register(CertificateModel)

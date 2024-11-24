@@ -5,6 +5,9 @@ from django_jalali.db import models as jmodel
 from Department.models import DepartmentModel
 
 
+# from Accounts.models import User
+
+
 class DoctorModel(models.Model):
     image = models.ImageField(upload_to='doctors/', null=True, blank=True)
     user = models.OneToOneField('Accounts.User', on_delete=models.CASCADE, related_name='doctor_profile', null=True,
@@ -14,6 +17,10 @@ class DoctorModel(models.Model):
     landline_phone = models.CharField(max_length=11, null=True)
     medical_license_number = models.CharField(max_length=5, null=True)
     bio = models.TextField(null=True)
+
+    # day = models.CharField(max_length=100, choices=DAYS, default='SATURDAY', null=True)
+    # start = models.TimeField(null=True, blank=True)
+    # end = models.TimeField(null=True, blank=True)
 
     def __str__(self):
         if self.user and self.user.first_name and self.user.last_name:
@@ -92,8 +99,21 @@ class WorkingHourModel(models.Model):
         ('THURSDAY', 'پنجشنبه'),
         ('FRIDAY', 'جمعه')
     )
-    DAYS = models.CharField(max_length=100, choices=DAYS, default='SATURDAY')
-    start = models.TimeField()
-    end = models.TimeField()
-    is_available = models.BooleanField(default=True)
-    doctor = models.ForeignKey('DoctorModel', related_name='doctor_working_hours', on_delete=models.PROTECT,null=True,blank=True)
+
+    doctor = models.ForeignKey(DoctorModel, on_delete=models.CASCADE, related_name='doctor_working_hours')
+    day = models.CharField(max_length=15, choices=DAYS)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+
+class AppointmentModel(models.Model):
+    doctor = models.ForeignKey('DoctorModel', related_name='doctor_appointment', on_delete=models.PROTECT)
+    patient = models.ForeignKey('Accounts.User', related_name='patient_appointment', on_delete=models.PROTECT,null=True)
+    date = jmodel.jDateField(null=True,blank=True)
+    time = models.TimeField(null=True,blank=True)
+
+    def __str__(self):
+        return f'{self.doctor.user.full_name}-{self.patient.full_name}-{self.date}-{self.time}'
+
+
+
