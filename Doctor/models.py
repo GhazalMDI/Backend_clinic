@@ -18,9 +18,6 @@ class DoctorModel(models.Model):
     medical_license_number = models.CharField(max_length=5, null=True)
     bio = models.TextField(null=True)
 
-    # day = models.CharField(max_length=100, choices=DAYS, default='SATURDAY', null=True)
-    # start = models.TimeField(null=True, blank=True)
-    # end = models.TimeField(null=True, blank=True)
 
     def __str__(self):
         if self.user and self.user.first_name and self.user.last_name:
@@ -45,6 +42,7 @@ class EducationDetailsModel(models.Model):
             (c['name']['common'], c['name']['common']) for c in countries
         ]
         return countries_choices
+
 
     @classmethod
     def choices_uni(cls):
@@ -112,8 +110,8 @@ class AppointmentModel(models.Model):
     date = jmodel.jDateField(null=True,blank=True)
     time = models.TimeField(null=True,blank=True)
 
-    def __str__(self):
-        return f'{self.doctor.user.full_name}-{self.patient.full_name}-{self.date}-{self.time}'
+    # def __str__(self):
+    #     return f'{self.doctor.user.full_name}-{self.patient.first_name} {self.patient.last_name}-{self.date}-{self.time}'
 
 
 

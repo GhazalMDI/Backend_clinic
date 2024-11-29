@@ -1,6 +1,6 @@
 from django.urls import path
-from Doctor.apis import SpecialtyAuto
+from Doctor.apis import BookingAPIView
 
 urlpatterns = [
-    path('specialty-autocomplete/', SpecialtyAuto.as_view(), name='specialty-autocomplete'),
+    path('booking/<doctor_id>/<date>/<day>/<time>/<user_id>/', BookingAPIView.as_view()),
 ]
