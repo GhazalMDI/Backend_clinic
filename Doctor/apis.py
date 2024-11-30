@@ -11,11 +11,11 @@ from utils.StandardResponse import get_Response
 
 class BookingAPIView(APIView):
 
-    def get(self, request, doctor_id, date, time, user_id,day):
+    def get(self, request, doctor_id, date, time, user_id):
         doctor = DoctorModel.objects.filter(pk=doctor_id).first()
         patient = User.object.filter(pk=user_id, is_doctor=False).first()
         try:
-            appointment  = get_available_slots(doctor, date=date, patient=patient, time=time,day=day)
+            appointment  = get_available_slots(doctor, date=date, patient=patient, time=time)
             asrz = AppointmentSerializers(appointment)
             
             return Response(

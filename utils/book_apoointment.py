@@ -7,9 +7,11 @@ from django.db import transaction
 from Doctor.models import AppointmentModel,DoctorModel
 
 
-def get_available_slots(doctor, date,day, patient, time):
+def get_available_slots(doctor, date, patient, time):
     
-        if date <= str(now().date()):
+        day=date.weekday()
+        print(day)
+        if date <= now().date():
             raise ValidationError('رزور وقت گذشته است')
 
         working_hours = doctor.doctor_working_hours.filter(day=day)
@@ -17,15 +19,13 @@ def get_available_slots(doctor, date,day, patient, time):
             raise ValidationError('در این روز، دکتر در مجموعه حضور ندارد')
         
         for work in working_hours:
-            if not (str(work.start_time) <= time < str(work.end_time) ):
+            if not (work.start_time) <= time < (work.end_time):
                 raise ValidationError('این زمان در بازه ی حضور نیست.')
             
-        
-        appointment_time = datetime.strptime(time, "%H:%M:%S").time()
+        appointment_time = datetime.strptime(str(time), "%H:%M:%S").time()
         # appointment_datetime = datetime.combine(datetime.today(), appointment_time)
         start_time = (datetime.combine(datetime.today(), appointment_time) - timedelta(minutes=7)).time()  # 15 دقیقه قبل
         end_time = (datetime.combine(datetime.today(), appointment_time) + timedelta(minutes=7)).time()  # 15 دقیقه بعد
-        print(ap)
         print(start_time)
         print(end_time)
         

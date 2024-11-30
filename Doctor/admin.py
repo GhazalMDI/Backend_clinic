@@ -1,3 +1,4 @@
+from typing import Any
 import requests
 from django.contrib import admin
 from django import forms
@@ -7,6 +8,7 @@ from dal import autocomplete
 
 from Doctor.models import *
 from Accounts.models import User
+from utils.book_apoointment import get_available_slots
 
 
 class DoctorModelForm(forms.ModelForm):
@@ -75,6 +77,23 @@ class AppointmentAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['patient'].queryset = User.object.filter(is_doctor=False)
+        
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        doctor_id = self.cleaned_data.get('doctor')
+        patient_id = self.cleaned_data.get('user')
+        date = self.cleaned_data.get('date')
+        time = self.cleaned_data.get('time')
+        try:
+            get_available_slots(doctor=doctor_id,patient=patient_id,date=date,time=time)
+            
+        except ValidationError as e:
+            print(e.message)
+            raise forms.ValidationError(e.message)
+        
+        return cleaned_data
+        
 
 
 class CertificateStackedInline(admin.StackedInline):
@@ -85,7 +104,7 @@ class CertificateStackedInline(admin.StackedInline):
 
 
 class EducationModelAdminForm(forms.ModelForm):
-    # country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
+    country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
     university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
 
     class Media:
@@ -146,11 +165,20 @@ class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
     form = DetailsMedicalSpecialtyForm
 
 
+
+        
+                
+    
+
+
 @admin.register(AppointmentModel)
 class AppointmentModelAdmin(admin.ModelAdmin):
     form = AppointmentAdminForm
     # fields = ('doctor', 'patient', 'date', 'time')
     list_display = ('date', 'time')
+    
+    
+    
 
 
 admin.site.register(CertificateModel)

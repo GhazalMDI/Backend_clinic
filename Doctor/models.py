@@ -35,13 +35,22 @@ class EducationDetailsModel(models.Model):
 
     @classmethod
     def choices_country(cls):
-        url = 'https://restcountries.com/v3.1/all'
-        res = requests.get(url)
-        countries = res.json()
-        countries_choices = [
-            (c['name']['common'], c['name']['common']) for c in countries
-        ]
-        return countries_choices
+        try:
+            res = requests.get('https://restcountries.com/v3.1/all')
+            res.raise_for_status()  # Raise HTTPError for bad responses
+            countries = [(country['cca2'], country['name']['common']) for country in res.json()]
+            return countries
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching country data: {e}")
+            return []
+        # url = ''
+       
+        # res = requests.get('https://restcountries.com/v3.1/all')
+        # countries = res.json()
+        # countries_choices = [
+        #     (c['name']['common'], c['name']['common']) for c in countries
+        # ]
+        # return countries_choices
 
 
     @classmethod
@@ -89,13 +98,13 @@ class DetailsMedicalSpecialty(models.Model):
 
 class WorkingHourModel(models.Model):
     DAYS = (
-        ('SATURDAY', 'شنبه'),
-        ('SUNDAY', 'یکشنبه'),
-        ('MONDAY', 'دوشنبه'),
-        ('TUESDAY', 'سه شنبه'),
-        ('WEDNESDAY', 'چهارشنبه'),
-        ('THURSDAY', 'پنجشنبه'),
-        ('FRIDAY', 'جمعه')
+        ('5', 'شنبه'),
+        ('6', 'یکشنبه'),
+        ('0', 'دوشنبه'),
+        ('1', 'سه شنبه'),
+        ('2', 'چهارشنبه'),
+        ('3', 'پنجشنبه'),
+        ('4', 'جمعه')
     )
 
     doctor = models.ForeignKey(DoctorModel, on_delete=models.CASCADE, related_name='doctor_working_hours')
