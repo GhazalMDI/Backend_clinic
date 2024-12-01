@@ -26,8 +26,8 @@ class AcademicFieldSerializers(serializers.ModelSerializer):
 
 
 class EducationDetailsSerializers(serializers.ModelSerializer):
-    academic_field = AcademicFieldSerializers(many=True, read_only=True)
-    doctor = DoctorSerializers(many=True, read_only=True)
+    # academic_field = AcademicFieldSerializers(many=True, read_only=True)
+    # doctor = DoctorSerializers(many=True, read_only=True)
 
     class Meta:
         model = EducationDetailsModel

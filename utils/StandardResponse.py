@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 
 
-def get_Response(success,message,status_code,data=None):
+def get_Response(success,message,status,data=None):
     
     return Response(
         {
@@ -9,5 +9,5 @@ def get_Response(success,message,status_code,data=None):
             "message":message,
             "data": data if data else {}, 
         },
-        status_code=status_code,
+        status=status,
     )

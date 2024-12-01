@@ -1,6 +1,7 @@
 from django.urls import path
-from Doctor.apis import BookingAPIView
+from Doctor import apis
+
 
 urlpatterns = [
-    path('booking/<doctor_id>/<date>/<day>/<time>/<user_id>/', BookingAPIView.as_view()),
+    path('booking/<doctor_id>/<date>/<day>/<time>/<user_id>/', apis.BookingAPIView.as_view()),
 ]

@@ -40,3 +40,10 @@ class User(AbstractBaseUser):
         return 'کاربر عزیز'
 
 
+class AddressModel(models.Model):
+    formatted_address = models.CharField(max_length=255)
+    state = models.CharField(max_length=150)
+    county = models.CharField(max_length=155)
+    neighbourhood = models.CharField(max_length=100)
+    # user = models.ForeignKey('User',models.PROTECT,null=True,blank=True,related_name='address_user')
+    

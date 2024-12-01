@@ -104,8 +104,8 @@ class CertificateStackedInline(admin.StackedInline):
 
 
 class EducationModelAdminForm(forms.ModelForm):
-    country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
-    university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
+    # country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
+    # university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
 
     class Media:
         js = ('js/adminPanel.js',)
