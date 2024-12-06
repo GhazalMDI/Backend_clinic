@@ -21,7 +21,7 @@ class DoctorModelForm(forms.ModelForm):
 
     class Meta:
         model = DoctorModel
-        fields = ['image', 'department', 'first_name', 'last_name', 'phone_number', 'is_active', 'birthday']
+        fields = ['image','first_name', 'last_name', 'phone_number', 'is_active', 'birthday']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,9 +59,9 @@ class DoctorModelForm(forms.ModelForm):
         phone_number = self.cleaned_data.get('phone_number')
         # بررسی اینکه شماره تلفن فعلی همان شماره تلفن قبلی است
         if self.instance.user:
-            existing_user = User.object.filter(phone_number=phone_number).exclude(id=self.instance.user.id)
+            existing_user = User.objects.filter(phone_number=phone_number).exclude(id=self.instance.user.id)
         else:
-            existing_user = User.object.filter(phone_number=phone_number)
+            existing_user = User.objects.filter(phone_number=phone_number)
 
         if existing_user.exists():
             raise forms.ValidationError('شماره تلفن وارد شده قبلاً ثبت شده است.')
@@ -178,7 +178,9 @@ class AppointmentModelAdmin(admin.ModelAdmin):
     list_display = ('date', 'time')
     
     
-    
+@admin.register(DoctorDepartmentModel)
+class DepartmentModelAdmin(admin.ModelAdmin):
+    fields = ('title', 'description', 'image')
 
 
 admin.site.register(CertificateModel)

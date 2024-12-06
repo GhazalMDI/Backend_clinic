@@ -18,7 +18,7 @@ class User(AbstractBaseUser):
     is_doctor = models.BooleanField(default=False)
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['last_name', 'first_name']
-    object = UserManager()
+    objects = UserManager()
 
     def has_perm(self, perm, obj=None):
         return True
@@ -46,4 +46,9 @@ class AddressModel(models.Model):
     county = models.CharField(max_length=155)
     neighbourhood = models.CharField(max_length=100)
     # user = models.ForeignKey('User',models.PROTECT,null=True,blank=True,related_name='address_user')
-    
+
+
+class OtpModel(models.Model):
+    random_code = models.CharField(max_length=6)
+    phone_number = models.CharField(max_length=11,null=True)
+    created = jmodel.jDateTimeField(auto_now_add=True)

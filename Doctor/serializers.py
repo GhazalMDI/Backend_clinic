@@ -4,19 +4,21 @@ from Doctor.models import *
 from Accounts.serializers import UserSerializers
 
 
+
+        
 class DepartmentSerializers(serializers.ModelSerializer):
     class Meta:
-        model = DoctorModel
-        fields = '__all__'
+        model = DoctorDepartmentModel
+        fields =('title','image','description')
 
 
 class DoctorSerializers(serializers.ModelSerializer):
-    department = DepartmentSerializers()
+    # department = DepartmentSerializers()
     user = UserSerializers(read_only=True)
 
     class Meta:
         model = DoctorModel
-        fields = '__all__'
+        fields = ('user','image','landline_phone','medical_license_number','bio')
 
 
 class AcademicFieldSerializers(serializers.ModelSerializer):
@@ -74,3 +76,5 @@ class AppointmentSerializers(serializers.ModelSerializer):
     class Meta:
         model = AppointmentModel
         fields = '__all__'
+
+

@@ -1,6 +1,11 @@
-
+import environ
 import os
 from pathlib import Path
+from datetime import timedelta
+
+env = environ.Env()
+# reading .env file
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,12 +14,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2b9ewz*3nedtiu&u-p7ch9f1db3xt*f_uak!)(c^%e)j5*2*qq'
+# SECRET_KEY = 'django-insecure-2b9ewz*3nedtiu&u-p7ch9f1db3xt*f_uak!)(c^%e)j5*2*qq'
 
+SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS =[]
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -32,11 +38,11 @@ THIRD_PARTY_APPS = [
     'boto3',
     'dal',
     'dal_select2',
+    'rest_framework_simplejwt'
 ]
 LOCAL_APPS = [
     'Home.apps.HomeConfig',
     'Accounts.apps.AccountsConfig',
-    'Department.apps.DepartmentConfig',
     'Doctor.apps.DoctorsConfig'
 ]
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -86,15 +92,13 @@ WSGI_APPLICATION = 'Main.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'clinic',
-        'USER': 'postgres',
-        'PASSWORD': '1383gh',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
+        'PORT': env('DATABASE_PORT'),
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -139,7 +143,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'Accounts.User'
 
-
 # STORAGES = {
 #     'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
 #     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}
@@ -150,3 +153,15 @@ AWS_SECRET_ACCESS_KEY = '815be517d25ba472ca30eaac5971620c44e872265bd2399698b3625
 AWS_S3_ENDPOINT_URL = 'https://s3.ir-thr-at1.arvanstorage.ir'
 AWS_STORAGE_BUCKET_NAME = 'clinicbucket'
 AWS_S3_FILE_OVERWRITE = False
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    # 'AUTH_HEADER_TYPES': ('Bearer',),
+}

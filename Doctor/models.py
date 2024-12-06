@@ -2,18 +2,24 @@ import requests
 from django.db import models
 from django_jalali.db import models as jmodel
 
-from Department.models import DepartmentModel
-
-
 # from Accounts.models import User
+
+
+class DoctorDepartmentModel(models.Model):
+    title = models.CharField(max_length=100, unique=True)
+    description = models.TextField(null=True,blank=True)
+    image = models.ImageField(upload_to='department/', null=True, blank=True)
+
+
+    def __str__(self):
+        return self.title
 
 
 class DoctorModel(models.Model):
     image = models.ImageField(upload_to='doctors/', null=True, blank=True)
     user = models.OneToOneField('Accounts.User', on_delete=models.CASCADE, related_name='doctor_profile', null=True,
                                 blank=True)
-    department = models.ForeignKey('Department.DepartmentModel', models.SET_NULL, 'department_doctors', null=True,
-                                   blank=True)
+    # department = models.ForeignKey(DoctorDepartmentModel, models.SET_NULL, 'doctor_department_doctor', null=True,blank=True)
     landline_phone = models.CharField(max_length=11, null=True)
     medical_license_number = models.CharField(max_length=5, null=True)
     bio = models.TextField(null=True)
@@ -73,7 +79,7 @@ class CertificateModel(models.Model):
 class MedicalSpecialtyModel(models.Model):
     name = models.CharField(max_length=150)
     description = models.TextField(null=True, blank=True)
-    department = models.ForeignKey('Department.DepartmentModel', related_name='department_medical_special',
+    department = models.ForeignKey('DoctorDepartmentModel', related_name='department_medical_special',
                                    on_delete=models.PROTECT)
 
     def __str__(self):
