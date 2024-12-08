@@ -29,7 +29,10 @@ class AddressSerializers(serializers.ModelSerializer):
 class OtpSerializers(serializers.Serializer):
     phone_number = serializers.CharField(max_length=11)
 
-
+    def validate_phone_number(self, value):
+        if len(value) != 11 or not value.isdigit():
+            raise serializers.ValidationError('شماره تلفن نامعتبر است')
+        return value
 
     def create(self, validated_data):
-        return  OtpModel.objects.create(**validated_data)
+        return OtpModel.objects.create(**validated_data)

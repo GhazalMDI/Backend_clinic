@@ -38,7 +38,10 @@ THIRD_PARTY_APPS = [
     'boto3',
     'dal',
     'dal_select2',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
+
 ]
 LOCAL_APPS = [
     'Home.apps.HomeConfig',
@@ -55,7 +58,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",  # آدرس فرانت‌اند Angular
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'Main.urls'
 
@@ -161,7 +171,12 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'USER_ID_FIELD': 'phone_number',
+    'USER_ID_CLAIM': 'phone_number',
+    'BLACKLIST_AFTER_ROTATION': True,
     # 'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+

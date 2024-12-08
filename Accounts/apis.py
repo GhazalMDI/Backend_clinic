@@ -3,6 +3,7 @@ import base64
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from django.core.exceptions import ValidationError
 from rest_framework.response import Response
@@ -31,21 +32,22 @@ class RegisterApi(APIView):
             phone_number = srz.validated_data.get('phone_number')
             temp_token = AccessToken()
             temp_token['phone_number'] = phone_number
-            temp_token.set_exp(lifetime=jdatetime.timedelta(minutes=5))
+            temp_token.set_exp(lifetime=jdatetime.timedelta(minutes=2))
             if otps := OtpModel.objects.filter(phone_number=phone_number).first():
                 exp_time = otps.created + jdatetime.timedelta(minutes=2)
                 if now > exp_time:
                     otps.delete()
                 else:
-                    return get_Response(
-                        success=True,
-                        message='زمان کد قبلی هنوز تمام نشده است',
-                        tokens=str(temp_token),
-                        status=200
-                    )
+                    return Response({
+                        'success': True,
+                        'message': 'زمان کد قبلی هنوز تمام نشده است',
+                        'temp_token': str(temp_token),
+
+                    }, status=200)
             Random_code = randint(100000, 999999)
             OtpModel.objects.create(phone_number=phone_number, random_code=Random_code)
-            print(f'token in fisrt: {temp_token}')
+            print(temp_token)
+            send_code(phone_number, Random_code)
 
             return Response({
                 'success': True,
@@ -61,10 +63,9 @@ class RegisterApi(APIView):
 
 
 class VerifyRegisterApi(APIView):
-    authentication_classes = [JWTAuthentication]
 
     def post(self, request):
-        token = request.data.get('Authorization')
+        token = request.headers.get('Authorization')
         user_code = request.data.get('code').strip()
         if not user_code:
             return get_Response(
@@ -79,7 +80,9 @@ class VerifyRegisterApi(APIView):
         now = jdatetime.datetime.now()
         try:
             access_token = AccessToken(token)
+            print(access_token)
             phone_number = access_token.get('phone_number')
+            print(phone_number)
             if otp := OtpModel.objects.filter(phone_number=phone_number).first():
                 print(otp.random_code)
                 print(user_code)
@@ -108,6 +111,7 @@ class VerifyRegisterApi(APIView):
                             tokens=tokens
                         )
                     user = User.objects.create(phone_number=phone_number)
+                    print(user)
                     tokens = self.create_jwt_user(user)
                     return get_Response(
                         success=True,
@@ -125,6 +129,8 @@ class VerifyRegisterApi(APIView):
 
     def create_jwt_user(self, user):
         refresh = RefreshToken.for_user(user)
+        print(refresh)
+        print(str(refresh.access_token))
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token)
@@ -216,3 +222,25 @@ class AddressApi(APIView):
 
         except ValidationError as e:
             return get_Response(success=False, message=e.message, status=400)
+
+
+class LogoutApi(APIView):
+    def post(self, request):
+        # try:
+        refresh_token = request.data.get('refresh_token')
+        print(refresh_token)
+        if not refresh_token:
+            print('hiii')
+            return get_Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                success=False,
+                message='Refresh token is required'
+            )
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({
+            'message': 'User logged out successfully'
+        }, status=status.HTTP_200_OK)
+
+    # except Exception as e:
+    #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
