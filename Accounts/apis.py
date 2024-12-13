@@ -1,17 +1,16 @@
-import jwt
-import base64
+import jdatetime
+import environ
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from google.oauth2 import id_token
+from google.auth.transport import requests
 from random import randint
-import jdatetime
 
 from Accounts.models import AddressModel, User, OtpModel
 from Accounts.serializers import AddressSerializers, UserSerializers, OtpSerializers
@@ -46,8 +45,8 @@ class RegisterApi(APIView):
                     }, status=200)
             Random_code = randint(100000, 999999)
             OtpModel.objects.create(phone_number=phone_number, random_code=Random_code)
-            print(temp_token)
-            send_code(phone_number, Random_code)
+            # print(temp_token)
+            # send_code(phone_number, Random_code)
 
             return Response({
                 'success': True,
@@ -67,6 +66,7 @@ class VerifyRegisterApi(APIView):
     def post(self, request):
         token = request.headers.get('Authorization')
         user_code = request.data.get('code').strip()
+        print(token)
         if not user_code:
             return get_Response(
                 success=False,
@@ -112,7 +112,7 @@ class VerifyRegisterApi(APIView):
                         )
                     user = User.objects.create(phone_number=phone_number)
                     print(user)
-                    tokens = self.create_jwt_user(user)
+                    tokens = create_jwt_user(user)
                     return get_Response(
                         success=True,
                         message='ثبت نام شام با موفقیت انجام شد.',
@@ -127,14 +127,22 @@ class VerifyRegisterApi(APIView):
         except TokenError:
             return Response({"error": "Token is invalid or expired"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def create_jwt_user(self, user):
-        refresh = RefreshToken.for_user(user)
-        print(refresh)
-        print(str(refresh.access_token))
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token)
-        }
+    # def create_jwt_user(self, user):
+    #     refresh = RefreshToken.for_user(user)
+    #     print(refresh)
+    #     print(str(refresh.access_token))
+    #     return {
+    #         'refresh': str(refresh),
+    #         'access': str(refresh.access_token)
+    #     }
+
+
+def create_jwt_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token)
+    }
 
 
 class ProfileApi(APIView):
@@ -226,21 +234,43 @@ class AddressApi(APIView):
 
 class LogoutApi(APIView):
     def post(self, request):
-        # try:
-        refresh_token = request.data.get('refresh_token')
-        print(refresh_token)
-        if not refresh_token:
-            print('hiii')
-            return get_Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                success=False,
-                message='Refresh token is required'
-            )
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        return Response({
-            'message': 'User logged out successfully'
-        }, status=status.HTTP_200_OK)
+        try:
+            refresh_token = request.data.get('refresh_token')
+            if not refresh_token:
+                return get_Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    success=False,
+                    message='Refresh token is required'
+                )
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({
+                'message': 'User logged out successfully'
+            }, status=status.HTTP_200_OK)
 
-    # except Exception as e:
-    #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GoogleLoginApi(APIView):
+    def post(self, request):
+        env = environ.Env()
+        CLIENT_ID = env('GOOGLE_CLIENT_ID')
+        token = request.data.get('token')
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        email = idinfo['email']
+        phone_number = idinfo['phone_number']
+        first_name = idinfo['given_name']
+        last_name = idinfo['family_name']
+        user, created = User.objects.get_or_create(phone_numbe=phone_number, defaults={
+            'phone_number': phone_number,
+            'first_name': first_name,
+            'last_name': last_name
+        })
+        tokens = create_jwt_user(user)
+        return get_Response(
+            success=True,
+            message='وورد یا ثبت نام با موفقیت انجام شد',
+            tokens=tokens,
+            status=status.HTTP_200_OK
+        )

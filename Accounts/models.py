@@ -13,6 +13,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=55)
     birthday = jmodel.jDateField(null=True)
     national_code = models.CharField(max_length=10,null=True)
+    email = models.EmailField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_doctor = models.BooleanField(default=False)

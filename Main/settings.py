@@ -22,6 +22,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# google
+GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = env('GOOGLE_CLIENT_SECRET')
+
 # Application definition
 
 DJANGO_APPS = [
@@ -40,6 +44,7 @@ THIRD_PARTY_APPS = [
     'dal_select2',
     'rest_framework_simplejwt',
     'corsheaders',
+    'google',
     'rest_framework_simplejwt.token_blacklist',
 
 ]
@@ -178,5 +183,3 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     # 'AUTH_HEADER_TYPES': ('Bearer',),
 }
-
-
