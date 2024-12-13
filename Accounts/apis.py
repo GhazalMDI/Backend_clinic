@@ -254,10 +254,11 @@ class LogoutApi(APIView):
 
 class GoogleLoginApi(APIView):
     def post(self, request):
-        env = environ.Env()
-        CLIENT_ID = env('GOOGLE_CLIENT_ID')
+
         token = request.data.get('token')
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        print(token)
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "971156426829-ashet68haj0smovhv1imq97l1s8jrqnb.apps.googleusercontent.com")
+        print(idinfo)
         email = idinfo['email']
         phone_number = idinfo['phone_number']
         first_name = idinfo['given_name']
