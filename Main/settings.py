@@ -67,7 +67,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",  # آدرس فرانت‌اند Angular
+    "http://localhost:4200",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

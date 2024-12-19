@@ -21,6 +21,14 @@ from Doctor.models import DoctorModel
 from Doctor.serializers import DoctorSerializers
 
 
+def create_jwt_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token)
+    }
+
+
 class RegisterApi(APIView):
 
     def post(self, request):
@@ -103,7 +111,7 @@ class VerifyRegisterApi(APIView):
                     otp.delete()
                     if user := User.objects.filter(phone_number=phone_number).first():
                         print(user)
-                        tokens = self.create_jwt_user(user)
+                        tokens = create_jwt_user(user)
                         return get_Response(
                             success=True,
                             message='کاربر عزیز خوش آمدید',
@@ -135,14 +143,6 @@ class VerifyRegisterApi(APIView):
     #         'refresh': str(refresh),
     #         'access': str(refresh.access_token)
     #     }
-
-
-def create_jwt_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token)
-    }
 
 
 class ProfileApi(APIView):
@@ -254,17 +254,13 @@ class LogoutApi(APIView):
 
 class GoogleLoginApi(APIView):
     def post(self, request):
-
         token = request.data.get('token')
-        print(token)
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "971156426829-ashet68haj0smovhv1imq97l1s8jrqnb.apps.googleusercontent.com")
-        print(idinfo)
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "971156426829-l5np1sfkm6hbu3ku2i1glbia08t0udte.apps.googleusercontent.com",)
         email = idinfo['email']
-        phone_number = idinfo['phone_number']
         first_name = idinfo['given_name']
         last_name = idinfo['family_name']
-        user, created = User.objects.get_or_create(phone_numbe=phone_number, defaults={
-            'phone_number': phone_number,
+        user, created = User.objects.get_or_create(email=email, defaults={
+            'email':email,
             'first_name': first_name,
             'last_name': last_name
         })
