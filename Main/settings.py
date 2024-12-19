@@ -23,8 +23,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # google
-GOOGLE_CLIENT_ID = '971156426829-l5np1sfkm6hbu3ku2i1glbia08t0udte.apps.googleusercontent.com'
-GOOGLE_CLIENT_SECRET = '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'
+
 
 # Application definition
 
