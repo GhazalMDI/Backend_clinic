@@ -73,6 +73,7 @@ class VerifyRegisterApi(APIView):
 
     def post(self, request):
         token = request.headers.get('Authorization')
+        print(token)
         user_code = request.data.get('code').strip()
         print(token)
         if not user_code:
@@ -83,6 +84,7 @@ class VerifyRegisterApi(APIView):
             )
         if not token:
             return Response({"error": "Token is missing"}, status=status.HTTP_400_BAD_REQUEST)
+    
 
         token = token.split(' ')[1] if ' ' in token else token
         now = jdatetime.datetime.now()
