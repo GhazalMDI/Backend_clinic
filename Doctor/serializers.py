@@ -14,7 +14,7 @@ class DepartmentSerializers(serializers.ModelSerializer):
 
 class DoctorSerializers(serializers.ModelSerializer):
     # department = DepartmentSerializers()
-    user = UserSerializers(read_only=True)
+    user = UserSerializers()
 
     class Meta:
         model = DoctorModel

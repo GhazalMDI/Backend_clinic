@@ -1,5 +1,6 @@
 import jdatetime
 import environ
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
@@ -150,9 +151,13 @@ class VerifyRegisterApi(APIView):
 class ProfileApi(APIView):
     permission_classes = [IsAuthenticated]
     serializers_class = UserSerializers
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        if request.auth:
+        print('yooooo')
+        print(request.user)
+        print(request.user.is_authenticated)
+        if request.user and  request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if not user.is_doctor:
                     return get_Response(
@@ -162,28 +167,27 @@ class ProfileApi(APIView):
                         status=200
                     )
 
-                if doctor := DoctorModel.objects.filter(user=user).first():
-                    return get_Response(
+                doctor = DoctorModel.objects.filter(user=user).first()
+                return get_Response(
                         success=True,
                         message='دکتر گرامی به پروفایل خود خوش آمدید',
                         data=DoctorSerializers(doctor).data,
                         status=200
-                    )
-
+                )
             # اگر کاربر وجود نداشت باید به apiview رجیستر کاربر منتقل شود و پس از یک توکن جدید و یک رکورد از user برایش ایجاد شود.
+            return get_Response(
+                success=False,
+                message='کاربری یافت نشد ',
+                status=401
+            )
 
         return get_Response(
-            success=False,
-            message='لطفا وارد حساب کاربری شوید',
-            status=401
+            success=True,
+            message='خطایی رخ داده است',
+            status=404
         )
 
-        # print(request.user)
-        # return get_Response(
-        #     success=True,
-        #     message='hi',
-        #     status=200
-        # )
+
 
 
 class AddressApi(APIView):
