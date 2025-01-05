@@ -19,9 +19,10 @@ class DoctorModelForm(forms.ModelForm):
     birthday = jforms.jDateField(widget=forms.DateInput(attrs={'type': 'date'}))
     is_doctor = forms.BooleanField(label='is_doctor')
 
+
     class Meta:
         model = DoctorModel
-        fields = ['image','first_name', 'last_name', 'phone_number', 'is_active', 'birthday']
+        fields = ['image','first_name', 'last_name', 'phone_number', 'is_active', 'birthday','bio','landline_phone','medical_license_number']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

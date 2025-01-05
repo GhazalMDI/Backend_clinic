@@ -2,7 +2,7 @@ from django.db import models
 
 
 class BannerModel(models.Model):
-    image = models.ImageField(upload_to=True)
+    image = models.ImageField(upload_to='banners/')
     description = models.TextField()
 
     def __str__(self):

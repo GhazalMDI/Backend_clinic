@@ -85,7 +85,6 @@ class VerifyRegisterApi(APIView):
             )
         if not token:
             return Response({"error": "Token is missing"}, status=status.HTTP_400_BAD_REQUEST)
-    
 
         token = token.split(' ')[1] if ' ' in token else token
         now = jdatetime.datetime.now()
@@ -157,24 +156,29 @@ class ProfileApi(APIView):
         print('yooooo')
         print(request.user)
         print(request.user.is_authenticated)
-        if request.user and  request.user.is_authenticated:
+        if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if not user.is_doctor:
                     return get_Response(
                         success=True,
                         message='به پروفایل خوش آمدید',
-                        data=UserSerializers(user).data,
-                        status=200
+                        data={
+                            'status_doctor': False,
+                            'user': UserSerializers(user).data,
+                        },
+                        status=200,
                     )
-
                 doctor = DoctorModel.objects.filter(user=user).first()
-                return get_Response(
-                        success=True,
-                        message='دکتر گرامی به پروفایل خود خوش آمدید',
-                        data=DoctorSerializers(doctor).data,
-                        status=200
-                )
-            # اگر کاربر وجود نداشت باید به apiview رجیستر کاربر منتقل شود و پس از یک توکن جدید و یک رکورد از user برایش ایجاد شود.
+                if doctor:
+                    return get_Response(
+                            success=True,
+                            message='دکتر گرامی به پروفایل خود خوش آمدید',
+                            data={
+                                'status_doctor': True,
+                                'user': DoctorSerializers(doctor).data,
+                            },
+                            status=200
+                    )
             return get_Response(
                 success=False,
                 message='کاربری یافت نشد ',
@@ -186,8 +190,6 @@ class ProfileApi(APIView):
             message='خطایی رخ داده است',
             status=404
         )
-
-
 
 
 class AddressApi(APIView):
@@ -261,12 +263,13 @@ class LogoutApi(APIView):
 class GoogleLoginApi(APIView):
     def post(self, request):
         token = request.data.get('token')
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), "971156426829-l5np1sfkm6hbu3ku2i1glbia08t0udte.apps.googleusercontent.com",)
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(),
+                                              "971156426829-l5np1sfkm6hbu3ku2i1glbia08t0udte.apps.googleusercontent.com", )
         email = idinfo['email']
         first_name = idinfo['given_name']
         last_name = idinfo['family_name']
         user, created = User.objects.get_or_create(email=email, defaults={
-            'email':email,
+            'email': email,
             'first_name': first_name,
             'last_name': last_name
         })
