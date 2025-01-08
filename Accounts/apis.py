@@ -192,6 +192,44 @@ class ProfileApi(APIView):
         )
 
 
+    def patch(self,request):
+        if request.user and request.user.is_authenticated:
+            if user := User.objects.filter(user=request.useer).first():
+                if user.is_doctor:
+                    srz = DoctorSerializers(data=user)
+                    if srz.is_valid():
+                        srz.save()
+                        return  get_Response(
+                            success=True,
+                            message='the doctor profile is updated ',
+                            status=200,
+                            data=srz.data
+                        )
+
+                else:
+                    srz = UserSerializers(data=user)
+                    if srz.is_valid():
+                        srz.save()
+                        return get_Response(
+                            success=True,
+                            message='the doctor profile is updated ',
+                            status=200,
+                            data=srz.data
+                        )
+
+            return get_Response(
+                success=False,
+                message='the user is not found',
+                status=404,
+            )
+        return get_Response(
+            success=False,
+            message='unauthorized',
+            status=500
+        )
+
+
+
 class AddressApi(APIView):
     # SERIALIZERS_CLASS =
 
