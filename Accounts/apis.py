@@ -194,9 +194,9 @@ class ProfileApi(APIView):
 
     def patch(self,request):
         if request.user and request.user.is_authenticated:
-            if user := User.objects.filter(user=request.useer).first():
+            if user := User.objects.filter(user=request.user).first():
                 if user.is_doctor:
-                    srz = DoctorSerializers(data=user)
+                    srz = DoctorSerializers(data=request.data,instance=user,partial=True)
                     if srz.is_valid():
                         srz.save()
                         return  get_Response(
@@ -207,7 +207,7 @@ class ProfileApi(APIView):
                         )
 
                 else:
-                    srz = UserSerializers(data=user)
+                    srz = UserSerializers(data=request.data,instance=user,partial=True)
                     if srz.is_valid():
                         srz.save()
                         return get_Response(
