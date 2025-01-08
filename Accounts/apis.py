@@ -153,12 +153,12 @@ class ProfileApi(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        print('yooooo')
         print(request.user)
         print(request.user.is_authenticated)
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if not user.is_doctor:
+                    print('the user')
                     return get_Response(
                         success=True,
                         message='به پروفایل خوش آمدید',
@@ -168,9 +168,10 @@ class ProfileApi(APIView):
                         },
                         status=200,
                     )
-                doctor = DoctorModel.objects.filter(user=user).first()
-                if doctor:
-                    return get_Response(
+                else:
+                    if doctor := DoctorModel.objects.filter(user=user).first():
+                        print('the doctor')
+                        return get_Response(
                             success=True,
                             message='دکتر گرامی به پروفایل خود خوش آمدید',
                             data={
@@ -178,7 +179,7 @@ class ProfileApi(APIView):
                                 'user': DoctorSerializers(doctor).data,
                             },
                             status=200
-                    )
+                        )
             return get_Response(
                 success=False,
                 message='کاربری یافت نشد ',
@@ -191,28 +192,33 @@ class ProfileApi(APIView):
             status=404
         )
 
-
-    def patch(self,request):
+    def patch(self, request):
+        print(request.user)
+        print(request.data)
         if request.user and request.user.is_authenticated:
-            if user := User.objects.filter(user=request.user).first():
-                if user.is_doctor:
-                    srz = DoctorSerializers(data=request.data,instance=user,partial=True)
-                    if srz.is_valid():
-                        srz.save()
-                        return  get_Response(
-                            success=True,
-                            message='the doctor profile is updated ',
-                            status=200,
-                            data=srz.data
-                        )
-
-                else:
-                    srz = UserSerializers(data=request.data,instance=user,partial=True)
+            if user := User.objects.filter(phone_number=request.user).first():
+                print('hiii user')
+                if user.is_doctor == True:
+                    doctor = DoctorModel.objects.filter(user=user).first()
+                    srz = DoctorSerializers(data=request.data, instance=doctor, partial=True)
                     if srz.is_valid():
                         srz.save()
                         return get_Response(
                             success=True,
                             message='the doctor profile is updated ',
+                            status=200,
+                            data=srz.data
+                        )
+                    if not srz.is_valid():
+                        print(srz.errors)
+
+                else:
+                    srz = UserSerializers(data=request.data, instance=user, partial=True)
+                    if srz.is_valid():
+                        srz.save()
+                        return get_Response(
+                            success=True,
+                            message='the user profile is updated ',
                             status=200,
                             data=srz.data
                         )
@@ -227,7 +233,6 @@ class ProfileApi(APIView):
             message='unauthorized',
             status=500
         )
-
 
 
 class AddressApi(APIView):
