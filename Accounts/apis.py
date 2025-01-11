@@ -200,14 +200,27 @@ class ProfileApi(APIView):
                 print('hiii user')
                 if user.is_doctor == True:
                     doctor = DoctorModel.objects.filter(user=user).first()
+                    user_data = {
+                        "first_name": request.data.get('first_name'),
+                        "last_name": request.data.get("last_name"),
+                        "birthday": request.data.get("birthday"),
+                        "bio": request.data.get("bio")
+                    }
+                    user_serializer = UserSerializers(data=user_data, instance=user, partial=True)
+                    if user_serializer.is_valid():
+                        user_serializer.save()
                     srz = DoctorSerializers(data=request.data, instance=doctor, partial=True)
                     if srz.is_valid():
                         srz.save()
+
+                        updated_data = DoctorSerializers(instance=doctor).data
+                        updated_data['user'] = UserSerializers(instance=user).data
+
                         return get_Response(
                             success=True,
                             message='the doctor profile is updated ',
                             status=200,
-                            data=srz.data
+                            data=updated_data
                         )
                     if not srz.is_valid():
                         print(srz.errors)
@@ -228,6 +241,7 @@ class ProfileApi(APIView):
                 message='the user is not found',
                 status=404,
             )
+
         return get_Response(
             success=False,
             message='unauthorized',
