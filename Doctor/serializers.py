@@ -4,12 +4,10 @@ from Doctor.models import *
 from Accounts.serializers import UserSerializers
 
 
-
-        
 class DepartmentSerializers(serializers.ModelSerializer):
     class Meta:
         model = DoctorDepartmentModel
-        fields =('title','image','description')
+        fields = ('title', 'image', 'description')
 
 
 class DoctorSerializers(serializers.ModelSerializer):
@@ -18,7 +16,7 @@ class DoctorSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorModel
-        fields = ('user','image','landline_phone','medical_license_number','bio')
+        fields = ('user', 'image', 'landline_phone', 'medical_license_number', 'bio')
 
 
 class AcademicFieldSerializers(serializers.ModelSerializer):
@@ -62,19 +60,17 @@ class DetailsMedicalSerializers(serializers.ModelSerializer):
 
 
 class WorkingHourSerializers(serializers.ModelSerializer):
-    doctor = DoctorSerializers(many=True, read_only=True)
+    doctor = DoctorSerializers()
 
     class Meta:
         model = WorkingHourModel
-        fields = '__all__'
+        fields = ('doctor','day','start_time','end_time')
 
 
 class AppointmentSerializers(serializers.ModelSerializer):
-    doctor = DoctorSerializers( read_only=True)
-    patient = UserSerializers( read_only=True)
+    doctor = DoctorSerializers(read_only=True)
+    patient = UserSerializers(read_only=True)
 
     class Meta:
         model = AppointmentModel
         fields = '__all__'
-
-

@@ -18,8 +18,8 @@ from Accounts.serializers import AddressSerializers, UserSerializers, OtpSeriali
 from utils.StandardResponse import get_Response
 from utils.neshan_api import map
 from utils.sms import send_code
-from Doctor.models import DoctorModel
-from Doctor.serializers import DoctorSerializers
+from Doctor.models import *
+from Doctor.serializers import DoctorSerializers, WorkingHourSerializers
 
 
 def create_jwt_user(user):
@@ -170,13 +170,15 @@ class ProfileApi(APIView):
                     )
                 else:
                     if doctor := DoctorModel.objects.filter(user=user).first():
-                        print('the doctor')
+                        work_hours = WorkingHourModel.objects.filter(doctor=doctor)
+                        # print(work_hours.values())
                         return get_Response(
                             success=True,
                             message='دکتر گرامی به پروفایل خود خوش آمدید',
                             data={
                                 'status_doctor': True,
                                 'user': DoctorSerializers(doctor).data,
+                                'work_hours': WorkingHourSerializers(work_hours, many=True).data
                             },
                             status=200
                         )
@@ -200,18 +202,29 @@ class ProfileApi(APIView):
                 print('hiii user')
                 if user.is_doctor == True:
                     doctor = DoctorModel.objects.filter(user=user).first()
+                    work_hour = WorkingHourModel.objects.filter(doctor=doctor).first()
                     user_data = {
                         "first_name": request.data.get('first_name'),
                         "last_name": request.data.get("last_name"),
                         "birthday": request.data.get("birthday"),
                         "bio": request.data.get("bio")
                     }
+
+                    # work_hours_data = {
+                    #
+                    # }
+
                     user_serializer = UserSerializers(data=user_data, instance=user, partial=True)
                     if user_serializer.is_valid():
                         user_serializer.save()
                     srz = DoctorSerializers(data=request.data, instance=doctor, partial=True)
                     if srz.is_valid():
                         srz.save()
+
+                    # work_srz = WorkingHourSerializers(data=request.data,instance=work_hour,partial=True)
+                    # if work_srz.is_valid():
+                    #     work_srz.save()
+
 
                         updated_data = DoctorSerializers(instance=doctor).data
                         updated_data['user'] = UserSerializers(instance=user).data
@@ -223,7 +236,12 @@ class ProfileApi(APIView):
                             data=updated_data
                         )
                     if not srz.is_valid():
-                        print(srz.errors)
+                        return get_Response(
+                            success=False,
+                            message='داده های ارسال شده معتبر نیست',
+                            status=500,
+                            data=srz.errors
+                        )
 
                 else:
                     srz = UserSerializers(data=request.data, instance=user, partial=True)
