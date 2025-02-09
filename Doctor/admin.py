@@ -19,10 +19,10 @@ class DoctorModelForm(forms.ModelForm):
     birthday = jforms.jDateField(widget=forms.DateInput(attrs={'type': 'date'}))
     is_doctor = forms.BooleanField(label='is_doctor')
 
-
     class Meta:
         model = DoctorModel
-        fields = ['image','first_name', 'last_name', 'phone_number', 'is_active', 'birthday','bio','landline_phone','medical_license_number']
+        fields = ['image', 'first_name', 'last_name', 'phone_number', 'is_active', 'birthday', 'bio', 'landline_phone',
+                  'medical_license_number']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,8 +78,7 @@ class AppointmentAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['patient'].queryset = User.object.filter(is_doctor=False)
-        
-        
+
     def clean(self):
         cleaned_data = super().clean()
         doctor_id = self.cleaned_data.get('doctor')
@@ -87,14 +86,13 @@ class AppointmentAdminForm(forms.ModelForm):
         date = self.cleaned_data.get('date')
         time = self.cleaned_data.get('time')
         try:
-            get_available_slots(doctor=doctor_id,patient=patient_id,date=date,time=time)
-            
+            get_available_slots(doctor=doctor_id, patient=patient_id, date=date, time=time)
+
         except ValidationError as e:
             print(e.message)
             raise forms.ValidationError(e.message)
-        
+
         return cleaned_data
-        
 
 
 class CertificateStackedInline(admin.StackedInline):
@@ -105,8 +103,8 @@ class CertificateStackedInline(admin.StackedInline):
 
 
 class EducationModelAdminForm(forms.ModelForm):
-    # country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
-    # university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
+    country = forms.ChoiceField(choices=EducationDetailsModel.choices_country(), required=True)
+    university = forms.ChoiceField(choices=EducationDetailsModel.choices_uni(), required=True)
 
     class Media:
         js = ('js/adminPanel.js',)
@@ -144,6 +142,12 @@ class DoctorModelAdmin(admin.ModelAdmin):
     # list_display = (' ',)
 
 
+@admin.register(AcademicFieldModel)
+class AcademicFieldModelAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    list_filter = ('name',)
+
+
 @admin.register(MedicalSpecialtyModel)
 class MedicalSpecialtyModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'department', 'description')
@@ -166,19 +170,13 @@ class DetailsMedicalSpecialtyAdmin(admin.ModelAdmin):
     form = DetailsMedicalSpecialtyForm
 
 
-
-        
-                
-    
-
-
 @admin.register(AppointmentModel)
 class AppointmentModelAdmin(admin.ModelAdmin):
     form = AppointmentAdminForm
     # fields = ('doctor', 'patient', 'date', 'time')
     list_display = ('date', 'time')
-    
-    
+
+
 @admin.register(DoctorDepartmentModel)
 class DepartmentModelAdmin(admin.ModelAdmin):
     fields = ('title', 'description', 'image')

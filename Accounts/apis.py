@@ -19,7 +19,7 @@ from utils.StandardResponse import get_Response
 from utils.neshan_api import map
 from utils.sms import send_code
 from Doctor.models import *
-from Doctor.serializers import DoctorSerializers, WorkingHourSerializers
+from Doctor.serializers import DoctorSerializers, WorkingHourSerializers,EducationDetailsSerializers
 
 
 def create_jwt_user(user):
@@ -171,6 +171,7 @@ class ProfileApi(APIView):
                 else:
                     if doctor := DoctorModel.objects.filter(user=user).first():
                         work_hours = WorkingHourModel.objects.filter(doctor=doctor)
+                        education = EducationDetailsModel.objects.filter(doctor=doctor)
                         # print(work_hours.values())
                         return get_Response(
                             success=True,
@@ -178,7 +179,8 @@ class ProfileApi(APIView):
                             data={
                                 'status_doctor': True,
                                 'user': DoctorSerializers(doctor).data,
-                                'work_hours': WorkingHourSerializers(work_hours, many=True).data
+                                'work_hours': WorkingHourSerializers(work_hours, many=True).data,
+                                'education':EducationDetailsSerializers(education,many=True).data
                             },
                             status=200
                         )

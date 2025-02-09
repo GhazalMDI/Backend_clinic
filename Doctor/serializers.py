@@ -21,13 +21,13 @@ class DoctorSerializers(serializers.ModelSerializer):
 
 class AcademicFieldSerializers(serializers.ModelSerializer):
     class Meta:
-        model = AppointmentModel
+        model = AcademicFieldModel
         fields = '__all__'
 
 
 class EducationDetailsSerializers(serializers.ModelSerializer):
-    # academic_field = AcademicFieldSerializers(many=True, read_only=True)
-    # doctor = DoctorSerializers(many=True, read_only=True)
+    academic_field = AcademicFieldSerializers()
+    doctor = DoctorSerializers()
 
     class Meta:
         model = EducationDetailsModel
@@ -35,7 +35,7 @@ class EducationDetailsSerializers(serializers.ModelSerializer):
 
 
 class CertificateSerializers(serializers.ModelSerializer):
-    doctor = DoctorSerializers(many=True, read_only=True)
+    doctor = DoctorSerializers()
 
     class Meta:
         model = CertificateModel

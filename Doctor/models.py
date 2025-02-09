@@ -39,25 +39,25 @@ class EducationDetailsModel(models.Model):
     doctor = models.ForeignKey('DoctorModel', related_name='doctor_education', on_delete=models.PROTECT, null=True)
     country = models.CharField(max_length=150, null=True)
 
-    # @classmethod
-    # def choices_country(cls):
-    #     try:
-    #         res = requests.get('https://restcountries.com/v3.1/all')
-    #         res.raise_for_status()  # Raise HTTPError for bad responses
-    #         countries = [(country['cca2'], country['name']['common']) for country in res.json()]
-    #         return countries
-    #     except requests.exceptions.RequestException as e:
-    #         print(f"Error fetching country data: {e}")
-    #         return []
+    @classmethod
+    def choices_country(cls):
+        try:
+            res = requests.get('https://restcountries.com/v3.1/all')
+            res.raise_for_status()  # Raise HTTPError for bad responses
+            countries = [(country['name'], country['name']['common']) for country in res.json()]
+            return countries
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching country data: {e}")
+            return []
 
 
-    # @classmethod
-    # def choices_uni(cls):
-    #     url = 'https://raw.githubusercontent.com/Hipo/university-domains-list/refs/heads/master/world_universities_and_domains.json'
-    #     response = requests.get(url)
-    #     universities = response.json()
-    #     university_choices = [(uni['name'], uni['name']) for uni in universities]
-    #     return university_choices
+    @classmethod
+    def choices_uni(cls):
+        url = 'https://raw.githubusercontent.com/Hipo/university-domains-list/refs/heads/master/world_universities_and_domains.json'
+        response = requests.get(url)
+        universities = response.json()
+        university_choices = [(uni['name'], uni['name']) for uni in universities]
+        return university_choices
 
 
 class AcademicFieldModel(models.Model):
