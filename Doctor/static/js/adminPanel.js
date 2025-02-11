@@ -6,23 +6,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     countryField.addEventListener('change', function () {
-        const selectedCountry = countryField.value;
-        fetch(`https://raw.githubusercontent.com/Hipo/university-domains-list/refs/heads/master/world_universities_and_domains.json`)
-            .then(response => response.json())
-            .then(data => {
-                const filteredUniversities = data.filter(uni => uni.country === selectedCountry);
-                universityField.innerHTML = '';
+    const selectedValue = countryField.value; // مقدار کامل (مثلاً: United States - ایالات متحده آمریکا)
+    const selectedCountry = selectedValue.split(' - ')[0]; // فقط بخش انگلیسی را جدا کن
+        console.log(selectedCountry)
 
-                filteredUniversities.forEach(uni => {
-                    const option = document.createElement('option');
-                    option.value = uni.name;
-                    option.textContent = uni.name;
-                    option.id = uni.country;
-                    universityField.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error fetching universities:', error));
-    });
+    fetch(`https://raw.githubusercontent.com/Hipo/university-domains-list/refs/heads/master/world_universities_and_domains.json`)
+        .then(response => response.json())
+        .then(data => {
+            const filteredUniversities = data.filter(uni => uni.country === selectedCountry);
+            universityField.innerHTML = '';
+
+            filteredUniversities.forEach(uni => {
+                const option = document.createElement('option');
+                option.value = uni.name;
+                option.textContent = uni.name;
+                universityField.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching universities:', error));
+});
+
 
 
 //     countryEducationField.addEventListener('change', function () {

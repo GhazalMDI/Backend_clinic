@@ -117,7 +117,7 @@ class EducationModelAdminForm(forms.ModelForm):
 @admin.register(EducationDetailsModel)
 class EducationDetailsModelAdmin(admin.ModelAdmin):
     form = EducationModelAdminForm
-    list_display = ('academic_field', 'university', 'graduation_year', 'doctor')
+    list_display = ('academic_field', 'university', 'country', 'graduation_year', 'doctor')
 
 
 class EducationDetailsModelStackedInlineAdmin(admin.StackedInline):
@@ -182,5 +182,10 @@ class DepartmentModelAdmin(admin.ModelAdmin):
     fields = ('title', 'description', 'image')
 
 
-admin.site.register(CertificateModel)
+@admin.register(CertificateModel)
+class CertificateModelAdmin(admin.ModelAdmin):
+    fields = ('certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
+    list_display = ('certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
+
+
 admin.site.register(WorkingHourModel)

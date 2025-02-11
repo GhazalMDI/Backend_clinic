@@ -32,8 +32,7 @@ class DoctorModel(models.Model):
 
 
 class EducationDetailsModel(models.Model):
-    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,
-                                       related_name='academic_to_education')
+    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,related_name='academic_to_education')
     university = models.CharField(max_length=255, null=True)
     graduation_year = models.IntegerField(null=True)
     doctor = models.ForeignKey('DoctorModel', related_name='doctor_education', on_delete=models.PROTECT, null=True)
@@ -49,7 +48,10 @@ class EducationDetailsModel(models.Model):
             for country in res.json():
                 common_name = country.get('name', {}).get('common', 'Unknown')
                 persian_name = country.get('translations', {}).get('per', {}).get('common', common_name)
-                countries.append((common_name, persian_name))
+                value = f"{common_name} - {persian_name}"
+                display = f"{persian_name} ({common_name})"  # فقط برای نمایش در فرم
+
+                countries.append((value, display))
 
             return countries
         except requests.exceptions.RequestException as e:
@@ -78,7 +80,7 @@ class CertificateModel(models.Model):
     issuing_institution = models.CharField(max_length=255)
     date_issue = jmodel.jDateField()
     expiration_date = jmodel.jDateField(null=True, blank=True)
-    additional_details = models.TextField()
+    additional_details = models.TextField(null=True,blank=True)
 
 
 class MedicalSpecialtyModel(models.Model):

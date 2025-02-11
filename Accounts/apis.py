@@ -19,7 +19,8 @@ from utils.StandardResponse import get_Response
 from utils.neshan_api import map
 from utils.sms import send_code
 from Doctor.models import *
-from Doctor.serializers import DoctorSerializers, WorkingHourSerializers,EducationDetailsSerializers
+from Doctor.serializers import DoctorSerializers, WorkingHourSerializers, EducationDetailsSerializers, \
+    CertificateSerializers
 
 
 def create_jwt_user(user):
@@ -172,6 +173,7 @@ class ProfileApi(APIView):
                     if doctor := DoctorModel.objects.filter(user=user).first():
                         work_hours = WorkingHourModel.objects.filter(doctor=doctor)
                         education = EducationDetailsModel.objects.filter(doctor=doctor)
+                        certificates = CertificateModel.objects.filter(doctor=doctor)
                         # print(work_hours.values())
                         return get_Response(
                             success=True,
@@ -180,7 +182,8 @@ class ProfileApi(APIView):
                                 'status_doctor': True,
                                 'user': DoctorSerializers(doctor).data,
                                 'work_hours': WorkingHourSerializers(work_hours, many=True).data,
-                                'education':EducationDetailsSerializers(education,many=True).data
+                                'education': EducationDetailsSerializers(education, many=True).data,
+                                'certificates': CertificateSerializers(certificates, many=True).data
                             },
                             status=200
                         )
@@ -223,10 +226,9 @@ class ProfileApi(APIView):
                     if srz.is_valid():
                         srz.save()
 
-                    # work_srz = WorkingHourSerializers(data=request.data,instance=work_hour,partial=True)
-                    # if work_srz.is_valid():
-                    #     work_srz.save()
-
+                        # work_srz = WorkingHourSerializers(data=request.data,instance=work_hour,partial=True)
+                        # if work_srz.is_valid():
+                        #     work_srz.save()
 
                         updated_data = DoctorSerializers(instance=doctor).data
                         updated_data['user'] = UserSerializers(instance=user).data
