@@ -44,12 +44,17 @@ class EducationDetailsModel(models.Model):
         try:
             res = requests.get('https://restcountries.com/v3.1/all')
             res.raise_for_status()  # Raise HTTPError for bad responses
-            countries = [(country['name'], country['name']['common']) for country in res.json()]
+            countries = []
+
+            for country in res.json():
+                common_name = country.get('name', {}).get('common', 'Unknown')
+                persian_name = country.get('translations', {}).get('per', {}).get('common', common_name)
+                countries.append((common_name, persian_name))
+
             return countries
         except requests.exceptions.RequestException as e:
             print(f"Error fetching country data: {e}")
             return []
-
 
     @classmethod
     def choices_uni(cls):
