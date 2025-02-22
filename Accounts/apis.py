@@ -154,8 +154,8 @@ class ProfileApi(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        print(request.user)
-        print(request.user.is_authenticated)
+        # print(request.user)
+        # print(request.user.is_authenticated)
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if not user.is_doctor:
@@ -216,7 +216,7 @@ class ProfileApi(APIView):
                     }
 
                     # work_hours_data = {
-                    #
+                    #     "DAYS":request.data.get('DAYS')
                     # }
 
                     user_serializer = UserSerializers(data=user_data, instance=user, partial=True)
@@ -268,6 +268,26 @@ class ProfileApi(APIView):
             success=False,
             message='unauthorized',
             status=500
+        )
+
+    def delete(self, request):
+        print('the delete def')
+        if request.user and request.user.is_authenticated:
+            if user := User.objects.filter(pk=request.user).first():
+                if user.is_doctor:
+                    working_hour_id = request.query_params.get("working_hour_id")
+                    if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=user).first():
+                        works_hours.delete()
+                        return get_Response(
+                            success=True,
+                            message='رکورد با موفقیت حذف شد',
+                            status=200
+                        )
+
+        return get_Response(
+            success=False,
+            message='خطا در حذف رکورد',
+            status=400
         )
 
 
