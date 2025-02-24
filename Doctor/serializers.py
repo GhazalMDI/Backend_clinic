@@ -64,7 +64,7 @@ class WorkingHourSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = WorkingHourModel
-        fields = ('doctor','day','start_time','end_time')
+        fields = ('id','doctor','day','start_time','end_time')
 
 
 class AppointmentSerializers(serializers.ModelSerializer):

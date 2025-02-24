@@ -154,8 +154,6 @@ class ProfileApi(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        # print(request.user)
-        # print(request.user.is_authenticated)
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if not user.is_doctor:
@@ -174,7 +172,6 @@ class ProfileApi(APIView):
                         work_hours = WorkingHourModel.objects.filter(doctor=doctor)
                         education = EducationDetailsModel.objects.filter(doctor=doctor)
                         certificates = CertificateModel.objects.filter(doctor=doctor)
-                        # print(work_hours.values())
                         return get_Response(
                             success=True,
                             message='دکتر گرامی به پروفایل خود خوش آمدید',
@@ -273,10 +270,12 @@ class ProfileApi(APIView):
     def delete(self, request):
         print('the delete def')
         if request.user and request.user.is_authenticated:
-            if user := User.objects.filter(pk=request.user).first():
+            if user := User.objects.filter(pk=request.user.id).first():
                 if user.is_doctor:
+                    doctor = DoctorModel.objects.filter(user__id=user.id).first()
                     working_hour_id = request.query_params.get("working_hour_id")
-                    if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=user).first():
+                    print(working_hour_id)
+                    if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
                         works_hours.delete()
                         return get_Response(
                             success=True,
