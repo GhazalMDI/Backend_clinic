@@ -305,8 +305,10 @@ class ProfileApi(APIView):
         if not doctor:
             return get_Response(success=False, message='دکتر یافت نشد', status=400)
 
-        srz = WorkingHourSerializers(data=request.data,context={'doctor': doctor})
+        srz = WorkingHourSerializers(data=request.data,many=True,context={'doctor': doctor})
+
         if srz.is_valid():
+
             srz.save()
             return get_Response(
                 success=True,

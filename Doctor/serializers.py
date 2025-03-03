@@ -64,25 +64,9 @@ class WorkingHourSerializers(serializers.ModelSerializer):
         model = WorkingHourModel
         fields = ('id', 'doctor', 'day', 'start_time', 'end_time')
 
-    DAYS_MAPPING = {
-        ('5', 'شنبه'),
-        ('6', 'یکشنبه'),
-        ('0', 'دوشنبه'),
-        ('1', 'سه شنبه'),
-        ('2', 'چهارشنبه'),
-        ('3', 'پنجشنبه'),
-        ('4', 'جمعه')
-    }
-
     doctor = DoctorSerializers(read_only=True)
 
-    def validated_day(self, value):
-        print('validated day')
-        if value in self.DAYS_MAPPING:
-            return self.DAYS_MAPPING[value]
-        elif value in dict(WorkingHourModel.DAYS).keys():
-            return value
-        raise serializers.ValidationError("مقدار نامعتبر برای روز")
+
 
     def create(self, validated_data):
         doctor = self.context.get('doctor')
