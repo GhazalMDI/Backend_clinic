@@ -289,6 +289,49 @@ class ProfileApi(APIView):
             status=400
         )
 
+    def post(self, request):
+        if not request.user or not request.user.is_authenticated:
+            return get_Response(success=False, message='لاگین کنید', status=401)
+
+        user = User.objects.filter(pk=request.user.id).first()
+        if not user:
+            return get_Response(success=False, message='کاربر مورد نظر یافت نشد', status=400)
+
+        if not user.is_doctor:
+            return get_Response(success=False, message='شما دسترسی لازم را ندارید', status=401)
+
+        doctor = DoctorModel.objects.filter(user__id=user.id).first()
+        print(doctor)
+        if not doctor:
+            return get_Response(success=False, message='دکتر یافت نشد', status=400)
+
+        srz = WorkingHourSerializers(data=request.data,context={'doctor': doctor})
+        if srz.is_valid():
+            srz.save()
+            return get_Response(
+                success=True,
+                message='داده ها ی شما',
+                status=200,
+                data=srz.data
+            )
+        return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
+
+        # work_hours_data = request.data.get('work_hours', [])  # دریافت لیست ساعات کاری
+        # if not isinstance(work_hours_data, list):
+        #     return get_Response(success=False, message='فرمت داده‌های ساعات کاری نادرست است', status=400)
+
+        # saved_work_hours = []
+        # for work_hour in work_hours_data:
+        #     srz = WorkingHourSerializers(data=work_hour, context={'doctor': doctor})
+        #     if srz.is_valid():
+        #         srz.save()
+        #         saved_work_hours.append(srz.data)
+        #     else:
+        #         print("خطای سریالایزر:", srz.errors)
+        #         return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
+        #
+        # return get_Response(success=True, message='رکوردها با موفقیت ثبت شدند', status=200, data=saved_work_hours)
+
 
 class AddressApi(APIView):
     # SERIALIZERS_CLASS =

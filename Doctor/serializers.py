@@ -60,11 +60,39 @@ class DetailsMedicalSerializers(serializers.ModelSerializer):
 
 
 class WorkingHourSerializers(serializers.ModelSerializer):
-    doctor = DoctorSerializers()
-
     class Meta:
         model = WorkingHourModel
-        fields = ('id','doctor','day','start_time','end_time')
+        fields = ('id', 'doctor', 'day', 'start_time', 'end_time')
+
+    DAYS_MAPPING = {
+        ('5', 'شنبه'),
+        ('6', 'یکشنبه'),
+        ('0', 'دوشنبه'),
+        ('1', 'سه شنبه'),
+        ('2', 'چهارشنبه'),
+        ('3', 'پنجشنبه'),
+        ('4', 'جمعه')
+    }
+
+    doctor = DoctorSerializers(read_only=True)
+
+    def validated_day(self, value):
+        print('validated day')
+        if value in self.DAYS_MAPPING:
+            return self.DAYS_MAPPING[value]
+        elif value in dict(WorkingHourModel.DAYS).keys():
+            return value
+        raise serializers.ValidationError("مقدار نامعتبر برای روز")
+
+    def create(self, validated_data):
+        doctor = self.context.get('doctor')
+        if not doctor:
+            raise serializers.ValidationError({'doctor': 'دکتر مشخص نشده است'})
+        w = WorkingHourModel.objects.create(doctor=doctor, **validated_data)
+        print(f'ID==== {w.id}')
+        return w
+
+
 
 
 class AppointmentSerializers(serializers.ModelSerializer):
