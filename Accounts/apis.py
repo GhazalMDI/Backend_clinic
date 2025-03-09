@@ -1,5 +1,6 @@
 import jdatetime
 import environ
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from rest_framework_simplejwt.exceptions import TokenError
@@ -152,6 +153,7 @@ class ProfileApi(APIView):
     permission_classes = [IsAuthenticated]
     serializers_class = UserSerializers
     authentication_classes = [JWTAuthentication]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         if request.user and request.user.is_authenticated:
@@ -201,7 +203,6 @@ class ProfileApi(APIView):
         print(request.data)
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
-                print('hiii user')
                 if user.is_doctor == True:
                     doctor = DoctorModel.objects.filter(user=user).first()
                     work_hour = WorkingHourModel.objects.filter(doctor=doctor).first()
@@ -267,8 +268,46 @@ class ProfileApi(APIView):
             status=500
         )
 
+    def put(self, request):
+        if request.user and request.user.is_authenticated:
+            if user := User.objects.filter(phone_number=request.user).first():
+                if user.is_doctor == True:
+                    if doctor := DoctorModel.objects.filter(user=user).first():
+                        if image := request.FILES.get('image'):
+                            if doctor.image:
+                                doctor.image.delete()
+                            doctor.image = image
+                            doctor.save()
+                            return get_Response(
+                                success=True,
+                                status=200,
+                                message='the image profile is success',
+                                data={'image_url': doctor.image.url}
+                            )
+                        return get_Response(
+                            success=False,
+                            status=400,
+                            message='the serializers is not valid',
+                        )
+                return get_Response(
+                    success=False,
+                    status=400,
+                    message='the doctor is not found',
+                )
+
+            return get_Response(
+                success=False,
+                status=400,
+                message='the user is not valid',
+            )
+
+        return get_Response(
+            success=False,
+            status=401,
+            message='the authenticated faild',
+        )
+
     def delete(self, request):
-        print('the delete def')
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(pk=request.user.id).first():
                 if user.is_doctor:
@@ -276,10 +315,12 @@ class ProfileApi(APIView):
                     working_hour_id = request.query_params.get("working_hour_id")
                     print(working_hour_id)
                     if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
-                        works_hours.delete()
+                        works_hours.delete_record = 'WAITING'
+                        works_hours.save()
+                        # works_hours.delete()
                         return get_Response(
                             success=True,
-                            message='رکورد با موفقیت حذف شد',
+                            message='رکورد در انتظار حذف توسط ادمین',
                             status=200
                         )
 
@@ -301,22 +342,32 @@ class ProfileApi(APIView):
             return get_Response(success=False, message='شما دسترسی لازم را ندارید', status=401)
 
         doctor = DoctorModel.objects.filter(user__id=user.id).first()
-        print(doctor)
         if not doctor:
             return get_Response(success=False, message='دکتر یافت نشد', status=400)
+        if request.data.get('type') == 'workSchedule':
+            srz = WorkingHourSerializers(data=request.data, many=True, context={'doctor': doctor})
+            if srz.is_valid():
+                srz.save()
+                return get_Response(
+                    success=True,
+                    message='داده ها ی شما',
+                    status=200,
+                    data=srz.data
+                )
+            return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
 
-        srz = WorkingHourSerializers(data=request.data,many=True,context={'doctor': doctor})
 
-        if srz.is_valid():
-
-            srz.save()
-            return get_Response(
-                success=True,
-                message='داده ها ی شما',
-                status=200,
-                data=srz.data
-            )
-        return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
+        # if request.data.get('type') == 'workSchedule':
+        #     srz = WorkingHourSerializers(data=request.data, many=True, context={'doctor': doctor})
+        #     if srz.is_valid():
+        #         srz.save()
+        #         return get_Response(
+        #             success=True,
+        #             message='داده ها ی شما',
+        #             status=200,
+        #             data=srz.data
+        #         )
+        #     return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
 
         # work_hours_data = request.data.get('work_hours', [])  # دریافت لیست ساعات کاری
         # if not isinstance(work_hours_data, list):

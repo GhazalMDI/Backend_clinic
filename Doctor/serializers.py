@@ -62,21 +62,17 @@ class DetailsMedicalSerializers(serializers.ModelSerializer):
 class WorkingHourSerializers(serializers.ModelSerializer):
     class Meta:
         model = WorkingHourModel
-        fields = ('id', 'doctor', 'day', 'start_time', 'end_time')
+        fields = ('id', 'doctor', 'day', 'start_time', 'end_time','delete_record')
 
     doctor = DoctorSerializers(read_only=True)
-
-
 
     def create(self, validated_data):
         doctor = self.context.get('doctor')
         if not doctor:
             raise serializers.ValidationError({'doctor': 'دکتر مشخص نشده است'})
-        w = WorkingHourModel.objects.create(doctor=doctor, **validated_data)
+        w = WorkingHourModel.objects.create(doctor=doctor, **validated_data, add_record=False)
         print(f'ID==== {w.id}')
         return w
-
-
 
 
 class AppointmentSerializers(serializers.ModelSerializer):

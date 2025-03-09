@@ -2,14 +2,14 @@ import requests
 from django.db import models
 from django_jalali.db import models as jmodel
 
+
 # from Accounts.models import User
 
 
 class DoctorDepartmentModel(models.Model):
     title = models.CharField(max_length=100, unique=True)
-    description = models.TextField(null=True,blank=True)
+    description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='department/', null=True, blank=True)
-
 
     def __str__(self):
         return self.title
@@ -24,7 +24,6 @@ class DoctorModel(models.Model):
     medical_license_number = models.CharField(max_length=5, null=True)
     bio = models.TextField(null=True)
 
-
     def __str__(self):
         if self.user and self.user.first_name and self.user.last_name:
             return f'{self.user.first_name} {self.user.last_name}'
@@ -32,7 +31,8 @@ class DoctorModel(models.Model):
 
 
 class EducationDetailsModel(models.Model):
-    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,related_name='academic_to_education')
+    academic_field = models.ForeignKey('AcademicFieldModel', models.PROTECT, null=True, blank=True,
+                                       related_name='academic_to_education')
     university = models.CharField(max_length=255, null=True)
     graduation_year = models.IntegerField(null=True)
     doctor = models.ForeignKey('DoctorModel', related_name='doctor_education', on_delete=models.PROTECT, null=True)
@@ -80,7 +80,7 @@ class CertificateModel(models.Model):
     issuing_institution = models.CharField(max_length=255)
     date_issue = jmodel.jDateField()
     expiration_date = jmodel.jDateField(null=True, blank=True)
-    additional_details = models.TextField(null=True,blank=True)
+    additional_details = models.TextField(null=True, blank=True)
 
 
 class MedicalSpecialtyModel(models.Model):
@@ -102,6 +102,11 @@ class DetailsMedicalSpecialty(models.Model):
 
 
 class WorkingHourModel(models.Model):
+    STATUS_DELETE = (
+        ('ACCEPTED', 'accepted'),
+        ('WAITING', 'waiting'),
+        ('NOT_ACCEPTED', 'not accepted')
+    )
     DAYS = (
         ('5', 'شنبه'),
         ('6', 'یکشنبه'),
@@ -116,17 +121,16 @@ class WorkingHourModel(models.Model):
     day = models.CharField(max_length=15, choices=DAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()
+    add_record = models.BooleanField(default=False, null=True, blank=True)
+    delete_record = models.CharField(choices=STATUS_DELETE, default='NOT_ACCEPTED', null=True, blank=True)
 
 
 class AppointmentModel(models.Model):
     doctor = models.ForeignKey('DoctorModel', related_name='doctor_appointment', on_delete=models.PROTECT)
-    patient = models.ForeignKey('Accounts.User', related_name='patient_appointment', on_delete=models.PROTECT,null=True)
-    date = jmodel.jDateField(null=True,blank=True)
-    time = models.TimeField(null=True,blank=True)
+    patient = models.ForeignKey('Accounts.User', related_name='patient_appointment', on_delete=models.PROTECT,
+                                null=True)
+    date = jmodel.jDateField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True)
 
     # def __str__(self):
     #     return f'{self.doctor.user.full_name}-{self.patient.first_name} {self.patient.last_name}-{self.date}-{self.time}'
-
-
-
-
