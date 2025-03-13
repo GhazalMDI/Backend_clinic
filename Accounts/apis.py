@@ -19,6 +19,7 @@ from Accounts.serializers import AddressSerializers, UserSerializers, OtpSeriali
 from utils.StandardResponse import get_Response
 from utils.neshan_api import map
 from utils.sms import send_code
+from utils.imageCompress import compress_image
 from Doctor.models import *
 from Doctor.serializers import DoctorSerializers, WorkingHourSerializers, EducationDetailsSerializers, \
     CertificateSerializers
@@ -269,12 +270,29 @@ class ProfileApi(APIView):
         )
 
     def put(self, request):
+        max_upload_size = 10 * 1024 * 1024  # 10MB
+        max_size = 150 * 1024  # 150KB
+
         if request.user and request.user.is_authenticated:
+            print('authenticated')
             if user := User.objects.filter(phone_number=request.user).first():
                 if user.is_doctor == True:
+                    print('is doctor!!')
                     if doctor := DoctorModel.objects.filter(user=user).first():
+                        print('your doctor')
                         if image := request.FILES.get('image'):
+                            print('the image is here')
+                            print(image.size)
+                            if image.size > max_upload_size:
+                                return get_Response(
+                                    success=False,
+                                    status=400,
+                                    message='the image is longer than 10 Mb'
+                                )
+                            if image.size > max_size:
+                                image = compress_image(image)
                             if doctor.image:
+                                print('last image is delete')
                                 doctor.image.delete()
                             doctor.image = image
                             doctor.save()
@@ -355,35 +373,6 @@ class ProfileApi(APIView):
                     data=srz.data
                 )
             return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
-
-
-        # if request.data.get('type') == 'workSchedule':
-        #     srz = WorkingHourSerializers(data=request.data, many=True, context={'doctor': doctor})
-        #     if srz.is_valid():
-        #         srz.save()
-        #         return get_Response(
-        #             success=True,
-        #             message='داده ها ی شما',
-        #             status=200,
-        #             data=srz.data
-        #         )
-        #     return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
-
-        # work_hours_data = request.data.get('work_hours', [])  # دریافت لیست ساعات کاری
-        # if not isinstance(work_hours_data, list):
-        #     return get_Response(success=False, message='فرمت داده‌های ساعات کاری نادرست است', status=400)
-
-        # saved_work_hours = []
-        # for work_hour in work_hours_data:
-        #     srz = WorkingHourSerializers(data=work_hour, context={'doctor': doctor})
-        #     if srz.is_valid():
-        #         srz.save()
-        #         saved_work_hours.append(srz.data)
-        #     else:
-        #         print("خطای سریالایزر:", srz.errors)
-        #         return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
-        #
-        # return get_Response(success=True, message='رکوردها با موفقیت ثبت شدند', status=200, data=saved_work_hours)
 
 
 class AddressApi(APIView):
