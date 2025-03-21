@@ -25,13 +25,22 @@ class AcademicFieldSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+
 class EducationDetailsSerializers(serializers.ModelSerializer):
-    academic_field = AcademicFieldSerializers()
-    doctor = DoctorSerializers()
+    academic_field = serializers.PrimaryKeyRelatedField(queryset=AcademicFieldModel.objects.all())
+    doctor = DoctorSerializers(read_only=True)
 
     class Meta:
         model = EducationDetailsModel
         fields = '__all__'
+
+    def create(self, validated_data):
+        doctor = self.context.get('doctor')
+        if not doctor:
+            raise serializers.ValidationError({'doctor': 'دکتر مشخص نشده است'})
+        e = EducationDetailsModel.objects.create(doctor=doctor, **validated_data)
+        return e
 
 
 class CertificateSerializers(serializers.ModelSerializer):
@@ -71,7 +80,6 @@ class WorkingHourSerializers(serializers.ModelSerializer):
         if not doctor:
             raise serializers.ValidationError({'doctor': 'دکتر مشخص نشده است'})
         w = WorkingHourModel.objects.create(doctor=doctor, **validated_data, add_record=False)
-        print(f'ID==== {w.id}')
         return w
 
 

@@ -2,6 +2,7 @@ import jdatetime
 import environ
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
@@ -22,7 +23,7 @@ from utils.sms import send_code
 from utils.imageCompress import compress_image
 from Doctor.models import *
 from Doctor.serializers import DoctorSerializers, WorkingHourSerializers, EducationDetailsSerializers, \
-    CertificateSerializers
+    CertificateSerializers,AcademicFieldSerializers
 
 
 def create_jwt_user(user):
@@ -152,21 +153,44 @@ class VerifyRegisterApi(APIView):
 
 class ProfileApi(APIView):
     permission_classes = [IsAuthenticated]
-    serializers_class = UserSerializers
     authentication_classes = [JWTAuthentication]
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
+    serializer_class = UserSerializers
+
+    # @extend_schema(
+    #     summary="دریافت اطلاعات پروفایل",
+    #     description="اطلاعات پروفایل کاربر را برمی‌گرداند. اگر کاربر پزشک باشد، اطلاعات اضافه‌تری برمی‌گردد.",
+    #     responses={
+    #         200: OpenApiResponse(
+    #             description="اطلاعات پروفایل برای کاربر عادی یا پزشک",
+    #             response={
+    #                 "application/json": {
+    #                     "status_doctor": False,
+    #
+    # : UserSerializers,
+    # "status_doctor": True: {
+    #     "user": DoctorSerializers,
+    #     "work_hours": WorkingHourSerializers(many=True),
+    #     "education": EducationDetailsSerializers(many=True),
+    #     "certificates": CertificateSerializers(many=True),
+    # }
+    # }
+    # }
+    # ),
+    # 401: OpenApiResponse(description="کاربر احراز هویت نشده است."),
+    # 404: OpenApiResponse(description="کاربر یافت نشد."),
+    # }
 
     def get(self, request):
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if not user.is_doctor:
-                    print('the user')
                     return get_Response(
                         success=True,
                         message='به پروفایل خوش آمدید',
                         data={
                             'status_doctor': False,
-                            'user': UserSerializers(user).data,
+                            'user': self.serializer_class(user).data,
                         },
                         status=200,
                     )
@@ -175,6 +199,9 @@ class ProfileApi(APIView):
                         work_hours = WorkingHourModel.objects.filter(doctor=doctor)
                         education = EducationDetailsModel.objects.filter(doctor=doctor)
                         certificates = CertificateModel.objects.filter(doctor=doctor)
+                        academic_field  = AcademicFieldModel.objects.all()
+                        for e in education:
+                            print(e.academic_field)
                         return get_Response(
                             success=True,
                             message='دکتر گرامی به پروفایل خود خوش آمدید',
@@ -183,7 +210,8 @@ class ProfileApi(APIView):
                                 'user': DoctorSerializers(doctor).data,
                                 'work_hours': WorkingHourSerializers(work_hours, many=True).data,
                                 'education': EducationDetailsSerializers(education, many=True).data,
-                                'certificates': CertificateSerializers(certificates, many=True).data
+                                'certificates': CertificateSerializers(certificates, many=True).data,
+                                'academic_field':AcademicFieldSerializers(academic_field ,many=True).data
                             },
                             status=200
                         )
@@ -200,34 +228,22 @@ class ProfileApi(APIView):
         )
 
     def patch(self, request):
-        print(request.user)
-        print(request.data)
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
                 if user.is_doctor == True:
                     doctor = DoctorModel.objects.filter(user=user).first()
-                    work_hour = WorkingHourModel.objects.filter(doctor=doctor).first()
                     user_data = {
                         "first_name": request.data.get('first_name'),
                         "last_name": request.data.get("last_name"),
                         "birthday": request.data.get("birthday"),
                         "bio": request.data.get("bio")
                     }
-
-                    # work_hours_data = {
-                    #     "DAYS":request.data.get('DAYS')
-                    # }
-
                     user_serializer = UserSerializers(data=user_data, instance=user, partial=True)
                     if user_serializer.is_valid():
                         user_serializer.save()
                     srz = DoctorSerializers(data=request.data, instance=doctor, partial=True)
                     if srz.is_valid():
                         srz.save()
-
-                        # work_srz = WorkingHourSerializers(data=request.data,instance=work_hour,partial=True)
-                        # if work_srz.is_valid():
-                        #     work_srz.save()
 
                         updated_data = DoctorSerializers(instance=doctor).data
                         updated_data['user'] = UserSerializers(instance=user).data
@@ -247,7 +263,7 @@ class ProfileApi(APIView):
                         )
 
                 else:
-                    srz = UserSerializers(data=request.data, instance=user, partial=True)
+                    srz = self.serializer_class(data=request.data, instance=user, partial=True)
                     if srz.is_valid():
                         srz.save()
                         return get_Response(
@@ -279,7 +295,7 @@ class ProfileApi(APIView):
                 if user.is_doctor == True:
                     print('is doctor!!')
                     if doctor := DoctorModel.objects.filter(user=user).first():
-                        print('your doctor')
+                        print('doctor found')
                         if image := request.FILES.get('image'):
                             print('the image is here')
                             print(image.size)
@@ -362,17 +378,48 @@ class ProfileApi(APIView):
         doctor = DoctorModel.objects.filter(user__id=user.id).first()
         if not doctor:
             return get_Response(success=False, message='دکتر یافت نشد', status=400)
-        if request.data.get('type') == 'workSchedule':
-            srz = WorkingHourSerializers(data=request.data, many=True, context={'doctor': doctor})
+
+        schedules = request.data.get('schedules', [])  # دریافت لیست برنامه‌های کاری
+        educations = request.data.get('Educations', [])  # دریافت لیست تحصیلا
+        if schedules:  # بررسی اینکه `schedules` مقدار داشته باشد
+            if not isinstance(schedules, list):
+                print('no')
+                return get_Response(success=False, message='فرمت داده‌های برنامه کاری اشتباه است', status=400)
+
+            srz = WorkingHourSerializers(data=schedules, many=True, context={'doctor': doctor})
+            print('hi')
             if srz.is_valid():
                 srz.save()
                 return get_Response(
                     success=True,
-                    message='داده ها ی شما',
+                    message='داده‌های شما ثبت شد',
                     status=200,
                     data=srz.data
                 )
-            return get_Response(success=False, message='خطا در سریالایز کردن داده ها', status=400, data=srz.errors)
+
+            return get_Response(success=False, message='خطا در سریالایز کردن داده‌های برنامه کاری', status=400,
+                                data=srz.errors)
+
+        elif educations:  # اگر `schedules` مقدار نداشت، ولی `educations` مقدار داشته باشد
+            print('hoo')
+            if not isinstance(educations, list):
+                return get_Response(success=False, message='فرمت داده‌های تحصیلات اشتباه است', status=400)
+
+            srz = EducationDetailsSerializers(data=educations, many=True, context={'doctor': doctor})
+            if srz.is_valid():
+                print('hi')
+                srz.save()
+                return get_Response(
+                    success=True,
+                    message='رکورد تحصیلات با موفقیت ثبت شد',
+                    status=200,
+                    data=srz.data
+                )
+
+            return get_Response(success=False, message='خطا در سریالایز کردن داده‌های تحصیلات', status=400,
+                                data=srz.errors)
+
+        return get_Response(success=False, message='هیچ داده‌ای ارسال نشده است', status=400)
 
 
 class AddressApi(APIView):

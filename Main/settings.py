@@ -40,6 +40,7 @@ DJANGO_APPS = [
 ]
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'drf_spectacular',
     'django_jalali',
     'boto3',
     'dal',
@@ -48,7 +49,8 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'google',
     'rest_framework_simplejwt.token_blacklist',
-    'storages'
+    'storages',
+
 
 ]
 LOCAL_APPS = [
@@ -176,6 +178,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_PARSER_CLASSES': [
+    #     'rest_framework.parsers.JSONParser',
+    #     'rest_framework.parsers.FormParser',
+    #     'rest_framework.parsers.MultiPartParser',
+    # ]
+
 }
 
 SIMPLE_JWT = {
@@ -185,4 +194,12 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'phone_number',
     'BLACKLIST_AFTER_ROTATION': True,
     # 'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Backend cliniC',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    # 'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
 }
