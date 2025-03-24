@@ -23,7 +23,7 @@ from utils.sms import send_code
 from utils.imageCompress import compress_image
 from Doctor.models import *
 from Doctor.serializers import DoctorSerializers, WorkingHourSerializers, EducationDetailsSerializers, \
-    CertificateSerializers,AcademicFieldSerializers
+    CertificateSerializers, AcademicFieldSerializers
 
 
 def create_jwt_user(user):
@@ -154,32 +154,7 @@ class VerifyRegisterApi(APIView):
 class ProfileApi(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    # parser_classes = [MultiPartParser, FormParser]
     serializer_class = UserSerializers
-
-    # @extend_schema(
-    #     summary="دریافت اطلاعات پروفایل",
-    #     description="اطلاعات پروفایل کاربر را برمی‌گرداند. اگر کاربر پزشک باشد، اطلاعات اضافه‌تری برمی‌گردد.",
-    #     responses={
-    #         200: OpenApiResponse(
-    #             description="اطلاعات پروفایل برای کاربر عادی یا پزشک",
-    #             response={
-    #                 "application/json": {
-    #                     "status_doctor": False,
-    #
-    # : UserSerializers,
-    # "status_doctor": True: {
-    #     "user": DoctorSerializers,
-    #     "work_hours": WorkingHourSerializers(many=True),
-    #     "education": EducationDetailsSerializers(many=True),
-    #     "certificates": CertificateSerializers(many=True),
-    # }
-    # }
-    # }
-    # ),
-    # 401: OpenApiResponse(description="کاربر احراز هویت نشده است."),
-    # 404: OpenApiResponse(description="کاربر یافت نشد."),
-    # }
 
     def get(self, request):
         if request.user and request.user.is_authenticated:
@@ -199,9 +174,9 @@ class ProfileApi(APIView):
                         work_hours = WorkingHourModel.objects.filter(doctor=doctor)
                         education = EducationDetailsModel.objects.filter(doctor=doctor)
                         certificates = CertificateModel.objects.filter(doctor=doctor)
-                        academic_field  = AcademicFieldModel.objects.all()
-                        for e in education:
-                            print(e.academic_field)
+                        academic_field = AcademicFieldModel.objects.all()
+                        # for e in education:
+                        #     print(e.academic_field)
                         return get_Response(
                             success=True,
                             message='دکتر گرامی به پروفایل خود خوش آمدید',
@@ -211,7 +186,7 @@ class ProfileApi(APIView):
                                 'work_hours': WorkingHourSerializers(work_hours, many=True).data,
                                 'education': EducationDetailsSerializers(education, many=True).data,
                                 'certificates': CertificateSerializers(certificates, many=True).data,
-                                'academic_field':AcademicFieldSerializers(academic_field ,many=True).data
+                                'academic_field': AcademicFieldSerializers(academic_field, many=True).data
                             },
                             status=200
                         )
@@ -347,17 +322,22 @@ class ProfileApi(APIView):
                 if user.is_doctor:
                     doctor = DoctorModel.objects.filter(user__id=user.id).first()
                     working_hour_id = request.query_params.get("working_hour_id")
-                    print(working_hour_id)
+                    education_id = request.query_params.get("education_id")
                     if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
                         works_hours.delete_record = 'WAITING'
                         works_hours.save()
-                        # works_hours.delete()
                         return get_Response(
                             success=True,
                             message='رکورد در انتظار حذف توسط ادمین',
                             status=200
                         )
-
+                    if educations := EducationDetailsModel.objects.filter(pk=education_id, doctor=doctor).first():
+                        educations.delete()
+                        return get_Response(
+                            success=True,
+                            status=200,
+                            message='رکورد تحصیللات با موفقیت حفظ شد'
+                        )
         return get_Response(
             success=False,
             message='خطا در حذف رکورد',

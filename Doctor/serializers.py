@@ -33,7 +33,7 @@ class EducationDetailsSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = EducationDetailsModel
-        fields = '__all__'
+        fields  = ('id', 'academic_field', 'doctor', 'university', 'graduation_year','country')
 
     def create(self, validated_data):
         doctor = self.context.get('doctor')
