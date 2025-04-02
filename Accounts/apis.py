@@ -171,12 +171,26 @@ class ProfileApi(APIView):
                     )
                 else:
                     if doctor := DoctorModel.objects.filter(user=user).first():
+                        if educationId := request.query_params.get('edit_edu'):
+                            print('hi')
+                            print(educationId)
+                            if education := EducationDetailsModel.objects.filter(id=educationId, doctor=doctor).first():
+                                print('eduaction get')
+                                education_serializers = EducationDetailsSerializers(instance=education,
+                                                                                    data=request.data, partial=True)
+                                if education_serializers.is_valid():
+                                    education_serializers.save()
+                                    return get_Response(
+                                        success=True,
+                                        status=200,
+                                        message='رکورد تحصیللات با موفقیت ویرایش شد',
+                                        data=education_serializers.data,
+                                    )
+
                         work_hours = WorkingHourModel.objects.filter(doctor=doctor)
                         education = EducationDetailsModel.objects.filter(doctor=doctor)
                         certificates = CertificateModel.objects.filter(doctor=doctor)
                         academic_field = AcademicFieldModel.objects.all()
-                        # for e in education:
-                        #     print(e.academic_field)
                         return get_Response(
                             success=True,
                             message='دکتر گرامی به پروفایل خود خوش آمدید',
@@ -205,8 +219,31 @@ class ProfileApi(APIView):
     def patch(self, request):
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
+                print('the user')
                 if user.is_doctor == True:
+                    print('the doctor')
+                    print("Request Data:", request.data)
                     doctor = DoctorModel.objects.filter(user=user).first()
+                    if educationId := request.data.get('edit_edu'):
+                        print('hi')
+                        print(educationId)
+                        if education := EducationDetailsModel.objects.filter(id=educationId, doctor=doctor).first():
+                            print('eduaction get')
+                            education_serializers = EducationDetailsSerializers(instance=education,
+                                                                                data=request.data, partial=True)
+                            print('hi 3')
+                            if education_serializers.is_valid():
+                                print('ok')
+                                education_serializers.save()
+                                print('serializer is save!')
+                                return get_Response(
+                                    success=True,
+                                    status=200,
+                                    message='رکورد تحصیللات با موفقیت ویرایش شد',
+                                    data=education_serializers.data,
+                                )
+                            if not education_serializers.is_valid():
+                                print("Doctor serializer errors:", education_serializers.errors)
                     user_data = {
                         "first_name": request.data.get('first_name'),
                         "last_name": request.data.get("last_name"),
