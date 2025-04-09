@@ -22,18 +22,16 @@ class DoctorSerializers(serializers.ModelSerializer):
 class AcademicFieldSerializers(serializers.ModelSerializer):
     class Meta:
         model = AcademicFieldModel
-        fields = '__all__'
-
-
+        fields = ('id', 'name')  # یا هر فیلدی که دوست داری
 
 
 class EducationDetailsSerializers(serializers.ModelSerializer):
-    academic_field = serializers.PrimaryKeyRelatedField(queryset=AcademicFieldModel.objects.all())
+    academic_field_ser = AcademicFieldSerializers(source='academic_field')
     doctor = DoctorSerializers(read_only=True)
 
     class Meta:
         model = EducationDetailsModel
-        fields  = ('id', 'academic_field', 'doctor', 'university', 'graduation_year','country')
+        fields = ('id','academic_field_ser', 'doctor', 'university', 'graduation_year', 'country')
 
     def create(self, validated_data):
         doctor = self.context.get('doctor')
@@ -71,7 +69,7 @@ class DetailsMedicalSerializers(serializers.ModelSerializer):
 class WorkingHourSerializers(serializers.ModelSerializer):
     class Meta:
         model = WorkingHourModel
-        fields = ('id', 'doctor', 'day', 'start_time', 'end_time','delete_record')
+        fields = ('id', 'doctor', 'day', 'start_time', 'end_time', 'delete_record')
 
     doctor = DoctorSerializers(read_only=True)
 
