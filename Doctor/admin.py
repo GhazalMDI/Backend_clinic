@@ -184,8 +184,8 @@ class DepartmentModelAdmin(admin.ModelAdmin):
 
 @admin.register(CertificateModel)
 class CertificateModelAdmin(admin.ModelAdmin):
-    fields = ('certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
-    list_display = ('certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
+    fields = ('doctor','certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
+    list_display = ('doctor','certificate_name', 'issuing_institution', 'date_issue', 'expiration_date', 'additional_details')
 
 
 admin.site.register(WorkingHourModel)

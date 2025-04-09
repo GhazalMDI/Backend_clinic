@@ -1,5 +1,6 @@
 import jdatetime
 import environ
+from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema, OpenApiResponse
@@ -360,21 +361,32 @@ class ProfileApi(APIView):
                     doctor = DoctorModel.objects.filter(user__id=user.id).first()
                     working_hour_id = request.query_params.get("working_hour_id")
                     education_id = request.query_params.get("education_id")
-                    if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
-                        works_hours.delete_record = 'WAITING'
-                        works_hours.save()
-                        return get_Response(
-                            success=True,
-                            message='رکورد در انتظار حذف توسط ادمین',
-                            status=200
-                        )
-                    if educations := EducationDetailsModel.objects.filter(pk=education_id, doctor=doctor).first():
-                        educations.delete()
-                        return get_Response(
-                            success=True,
-                            status=200,
-                            message='رکورد تحصیللات با موفقیت حفظ شد'
-                        )
+                    certificate_id = request.query_params.get("certificate_id")
+                    if working_hour_id:
+                        if  works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
+                            works_hours.delete_record = 'WAITING'
+                            works_hours.save()
+                            return get_Response(
+                                success=True,
+                                message='رکورد در انتظار حذف توسط ادمین',
+                                status=200
+                            )
+                    elif education_id:
+                        if educations := EducationDetailsModel.objects.filter(pk=education_id, doctor=doctor).first():
+                            educations.delete()
+                            return get_Response(
+                                success=True,
+                                status=200,
+                                message='رکورد تحصیللات با موفقیت حفظ شد'
+                            )
+                    elif certificate_id:
+                        if certificate := get_object_or_404(CertificateModel,pk=certificate_id,doctor=doctor):
+                            certificate.delete()
+                            return get_Response(
+                                success=True,
+                                status=200,
+                                message='گواهینامه مورد نظر حذف شد'
+                            )
         return get_Response(
             success=False,
             message='خطا در حذف رکورد',
