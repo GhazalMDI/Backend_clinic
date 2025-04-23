@@ -156,6 +156,64 @@ class ProfileApi(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = UserSerializers
+    def post(self, request):
+        if not request.user or not request.user.is_authenticated:
+            return get_Response(success=False, message='لاگین کنید', status=401)
+
+        user = User.objects.filter(pk=request.user.id).first()
+        if not user:
+            return get_Response(success=False, message='کاربر مورد نظر یافت نشد', status=400)
+
+        if not user.is_doctor:
+            return get_Response(success=False, message='شما دسترسی لازم را ندارید', status=401)
+
+        doctor = DoctorModel.objects.filter(user__id=user.id).first()
+        if not doctor:
+            return get_Response(success=False, message='دکتر یافت نشد', status=400)
+
+        schedules = request.data.get('schedules', [])  # دریافت لیست برنامه‌های کاری
+        educations = request.data.get('Educations', [])  # دریافت لیست تحصیلا
+        print(educations)
+        if schedules:  # بررسی اینکه `schedules` مقدار داشته باشد
+            if not isinstance(schedules, list):
+                print('no')
+                return get_Response(success=False, message='فرمت داده‌های برنامه کاری اشتباه است', status=400)
+
+            srz = WorkingHourSerializers(data=schedules, many=True, context={'doctor': doctor})
+            print('hi')
+            if srz.is_valid():
+                srz.save()
+                return get_Response(
+                    success=True,
+                    message='داده‌های شما ثبت شد',
+                    status=200,
+                    data=srz.data
+                )
+
+            return get_Response(success=False, message='خطا در سریالایز کردن داده‌های برنامه کاری', status=400,
+                                data=srz.errors)
+
+        elif educations:  # اگر `schedules` مقدار نداشت، ولی `educations` مقدار داشته باشد
+            print('hoo')
+            if not isinstance(educations, list):
+                return get_Response(success=False, message='فرمت داده‌های تحصیلات اشتباه است', status=400)
+
+            print('hiiiii education')
+            srz = EducationDetailsSerializers(data=educations, many=True, context={'doctor': doctor})
+            if srz.is_valid():
+                print('hi')
+                srz.save()
+                return get_Response(
+                    success=True,
+                    message='رکورد تحصیلات با موفقیت ثبت شد',
+                    status=200,
+                    data=srz.data
+                )
+
+            return get_Response(success=False, message='خطا در سریالایز کردن داده‌های تحصیلات', status=400,
+                                data=srz.errors)
+
+        return get_Response(success=False, message='هیچ داده‌ای ارسال نشده است', status=400)
 
     def get(self, request):
         if request.user and request.user.is_authenticated:
@@ -216,6 +274,67 @@ class ProfileApi(APIView):
             message='خطایی رخ داده است',
             status=404
         )
+
+    def put(self, request):
+        max_upload_size = 10 * 1024 * 1024  # 10MB
+        max_size = 150 * 1024  # 150KB
+
+        if request.user and request.user.is_authenticated:
+            print('authenticated')
+            if user := User.objects.filter(phone_number=request.user).first():
+                if user.is_doctor == True:
+                    print('is doctor!!')
+                    if doctor := DoctorModel.objects.filter(user=user).first():
+                        print('doctor found')
+                        if image := request.FILES.get('image'):
+                            print('the image is here')
+                            print(image.size)
+                            if image.size > max_upload_size:
+                                return get_Response(
+                                    success=False,
+                                    status=400,
+                                    message='the image is longer than 10 Mb'
+                                )
+                            if image.size > max_size:
+                                image = compress_image(image)
+                            if doctor.image:
+                                print('last image is delete')
+                                doctor.image.delete()
+                            doctor.image = image
+                            doctor.save()
+                            return get_Response(
+                                success=True,
+                                status=200,
+                                message='the image profile is success',
+                                data={'image_url': doctor.image.url}
+                            )
+                        return get_Response(
+                            success=False,
+                            status=400,
+                            message='the serializers is not valid',
+                        )
+                return get_Response(
+                    success=False,
+                    status=400,
+                    message='the doctor is not found',
+                )
+
+            return get_Response(
+                success=False,
+                status=400,
+                message='the user is not valid',
+            )
+
+        return get_Response(
+            success=False,
+            status=401,
+            message='the authenticated faild',
+        )
+
+
+class ProfileEditDeleteApi(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def patch(self, request):
         if request.user and request.user.is_authenticated:
@@ -298,159 +417,83 @@ class ProfileApi(APIView):
             status=500
         )
 
-    def put(self, request):
-        max_upload_size = 10 * 1024 * 1024  # 10MB
-        max_size = 150 * 1024  # 150KB
-
+    def delete(self, request, pk):
         if request.user and request.user.is_authenticated:
-            print('authenticated')
-            if user := User.objects.filter(phone_number=request.user).first():
-                if user.is_doctor == True:
-                    print('is doctor!!')
-                    if doctor := DoctorModel.objects.filter(user=user).first():
-                        print('doctor found')
-                        if image := request.FILES.get('image'):
-                            print('the image is here')
-                            print(image.size)
-                            if image.size > max_upload_size:
-                                return get_Response(
-                                    success=False,
-                                    status=400,
-                                    message='the image is longer than 10 Mb'
-                                )
-                            if image.size > max_size:
-                                image = compress_image(image)
-                            if doctor.image:
-                                print('last image is delete')
-                                doctor.image.delete()
-                            doctor.image = image
-                            doctor.save()
-                            return get_Response(
-                                success=True,
-                                status=200,
-                                message='the image profile is success',
-                                data={'image_url': doctor.image.url}
-                            )
-                        return get_Response(
-                            success=False,
-                            status=400,
-                            message='the serializers is not valid',
-                        )
-                return get_Response(
-                    success=False,
-                    status=400,
-                    message='the doctor is not found',
-                )
+            action = request.query_params.get('action')
+            match action:
+                case 'certificate':
+                    return self.delete_certificate(request, pk)
+                case 'education':
+                    return self.delete_education(request, pk)
+                case 'working_hour':
+                    return self.delete_workHours(request, pk)
+                case _:
+                    return get_Response(
+                        status=400,
+                        success=False,
+                        message='invalid action'
+                    )
 
-            return get_Response(
-                success=False,
-                status=400,
-                message='the user is not valid',
-            )
-
-        return get_Response(
-            success=False,
-            status=401,
-            message='the authenticated faild',
-        )
-
-    def delete(self, request):
-        if request.user and request.user.is_authenticated:
-            if user := User.objects.filter(pk=request.user.id).first():
-                if user.is_doctor:
-                    doctor = DoctorModel.objects.filter(user__id=user.id).first()
-                    working_hour_id = request.query_params.get("working_hour_id")
-                    education_id = request.query_params.get("education_id")
-                    certificate_id = request.query_params.get("certificate_id")
-                    if working_hour_id:
-                        if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
-                            works_hours.delete_record = 'WAITING'
-                            works_hours.save()
-                            return get_Response(
-                                success=True,
-                                message='رکورد در انتظار حذف توسط ادمین',
-                                status=200
-                            )
-                    elif education_id:
-                        if educations := EducationDetailsModel.objects.filter(pk=education_id, doctor=doctor).first():
-                            educations.delete()
-                            return get_Response(
-                                success=True,
-                                status=200,
-                                message='رکورد تحصیللات با موفقیت حذف شد'
-                            )
-                    elif certificate_id:
-                        if certificate := get_object_or_404(CertificateModel, pk=certificate_id, doctor=doctor):
-                            certificate.delete()
-                            return get_Response(
-                                success=True,
-                                status=200,
-                                message='گواهینامه مورد نظر حذف شد'
-                            )
         return get_Response(
             success=False,
             message='خطا در حذف رکورد',
             status=400
         )
 
-    def post(self, request):
-        if not request.user or not request.user.is_authenticated:
-            return get_Response(success=False, message='لاگین کنید', status=401)
+    def delete_certificate(self, request, pk):
+        if request.user and request.user.is_authenticated:
+            if user := User.objects.filter(pk=request.user.id).first():
+                if user.is_doctor:
+                    doctor = DoctorModel.objects.filter(user__id=user.id).first()
+                    if certificate := get_object_or_404(CertificateModel, pk=pk, doctor=doctor):
+                        certificate.delete()
+                        return get_Response(
+                            success=True,
+                            status=200,
+                            message='گواهینامه مورد نظر حذف شد'
+                        )
 
-        user = User.objects.filter(pk=request.user.id).first()
-        if not user:
-            return get_Response(success=False, message='کاربر مورد نظر یافت نشد', status=400)
+        return get_Response(
+            success=False,
+            message='خطا در حذف رکورد',
+            status=400
+        )
 
-        if not user.is_doctor:
-            return get_Response(success=False, message='شما دسترسی لازم را ندارید', status=401)
+    def delete_education(self, request, pk):
+        if request.user and request.user.is_authenticated:
+            if user := User.objects.filter(pk=request.user.id).first():
+                if user.is_doctor:
+                    doctor = DoctorModel.objects.filter(user__id=user.id).first()
+                    if educations := EducationDetailsModel.objects.filter(pk=pk, doctor=doctor).first():
+                        educations.delete()
+                        return get_Response(
+                            success=True,
+                            status=200,
+                            message='رکورد تحصیللات با موفقیت حذف شد'
+                        )
+        return get_Response(
+            success=False,
+            message='خطا در حذف رکورد',
+            status=400
+        )
 
-        doctor = DoctorModel.objects.filter(user__id=user.id).first()
-        if not doctor:
-            return get_Response(success=False, message='دکتر یافت نشد', status=400)
-
-        schedules = request.data.get('schedules', [])  # دریافت لیست برنامه‌های کاری
-        educations = request.data.get('Educations', [])  # دریافت لیست تحصیلا
-        print(educations)
-        if schedules:  # بررسی اینکه `schedules` مقدار داشته باشد
-            if not isinstance(schedules, list):
-                print('no')
-                return get_Response(success=False, message='فرمت داده‌های برنامه کاری اشتباه است', status=400)
-
-            srz = WorkingHourSerializers(data=schedules, many=True, context={'doctor': doctor})
-            print('hi')
-            if srz.is_valid():
-                srz.save()
-                return get_Response(
-                    success=True,
-                    message='داده‌های شما ثبت شد',
-                    status=200,
-                    data=srz.data
-                )
-
-            return get_Response(success=False, message='خطا در سریالایز کردن داده‌های برنامه کاری', status=400,
-                                data=srz.errors)
-
-        elif educations:  # اگر `schedules` مقدار نداشت، ولی `educations` مقدار داشته باشد
-            print('hoo')
-            if not isinstance(educations, list):
-                return get_Response(success=False, message='فرمت داده‌های تحصیلات اشتباه است', status=400)
-
-            print('hiiiii education')
-            srz = EducationDetailsSerializers(data=educations, many=True, context={'doctor': doctor})
-            if srz.is_valid():
-                print('hi')
-                srz.save()
-                return get_Response(
-                    success=True,
-                    message='رکورد تحصیلات با موفقیت ثبت شد',
-                    status=200,
-                    data=srz.data
-                )
-
-            return get_Response(success=False, message='خطا در سریالایز کردن داده‌های تحصیلات', status=400,
-                                data=srz.errors)
-
-        return get_Response(success=False, message='هیچ داده‌ای ارسال نشده است', status=400)
+    def delete_workHours(self, request, pk):
+        if request.user and request.user.is_authenticated:
+            if user := User.objects.filter(pk=request.user.id).first():
+                if user.is_doctor:
+                    doctor = DoctorModel.objects.filter(user__id=user.id).first()
+                    if works_hours := WorkingHourModel.objects.filter(pk=pk, doctor=doctor).first():
+                        works_hours.delete()
+                        return get_Response(
+                            success=True,
+                            message='رکورد با موفقیت حذف شد',
+                            status=200
+                        )
+        return get_Response(
+            success=False,
+            message='خطا در حذف رکورد',
+            status=400
+        )
 
 
 class AddressApi(APIView):
