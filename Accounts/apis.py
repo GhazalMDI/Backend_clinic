@@ -363,7 +363,7 @@ class ProfileApi(APIView):
                     education_id = request.query_params.get("education_id")
                     certificate_id = request.query_params.get("certificate_id")
                     if working_hour_id:
-                        if  works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
+                        if works_hours := WorkingHourModel.objects.filter(pk=working_hour_id, doctor=doctor).first():
                             works_hours.delete_record = 'WAITING'
                             works_hours.save()
                             return get_Response(
@@ -377,10 +377,10 @@ class ProfileApi(APIView):
                             return get_Response(
                                 success=True,
                                 status=200,
-                                message='رکورد تحصیللات با موفقیت حفظ شد'
+                                message='رکورد تحصیللات با موفقیت حذف شد'
                             )
                     elif certificate_id:
-                        if certificate := get_object_or_404(CertificateModel,pk=certificate_id,doctor=doctor):
+                        if certificate := get_object_or_404(CertificateModel, pk=certificate_id, doctor=doctor):
                             certificate.delete()
                             return get_Response(
                                 success=True,
@@ -410,6 +410,7 @@ class ProfileApi(APIView):
 
         schedules = request.data.get('schedules', [])  # دریافت لیست برنامه‌های کاری
         educations = request.data.get('Educations', [])  # دریافت لیست تحصیلا
+        print(educations)
         if schedules:  # بررسی اینکه `schedules` مقدار داشته باشد
             if not isinstance(schedules, list):
                 print('no')
@@ -434,6 +435,7 @@ class ProfileApi(APIView):
             if not isinstance(educations, list):
                 return get_Response(success=False, message='فرمت داده‌های تحصیلات اشتباه است', status=400)
 
+            print('hiiiii education')
             srz = EducationDetailsSerializers(data=educations, many=True, context={'doctor': doctor})
             if srz.is_valid():
                 print('hi')

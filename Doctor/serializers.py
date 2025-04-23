@@ -25,13 +25,23 @@ class AcademicFieldSerializers(serializers.ModelSerializer):
         fields = ('id', 'name')  # یا هر فیلدی که دوست داری
 
 
+# class EducationDetailsSerializers(serializers.ModelSerializer):
+#     academic_field_ser = AcademicFieldSerializers(source='academic_field')
+#     doctor = DoctorSerializers(read_only=True)
+#
+#     class Meta:
+#         model = EducationDetailsModel
+#         fields = ('id','academic_field_ser', 'doctor', 'university', 'graduation_year', 'country')
+
 class EducationDetailsSerializers(serializers.ModelSerializer):
-    academic_field_ser = AcademicFieldSerializers(source='academic_field')
+    academic_field_ser = AcademicFieldSerializers(source='academic_field', read_only=True)
+    academic_field = serializers.PrimaryKeyRelatedField(queryset=AcademicFieldModel.objects.all(), write_only=True)
     doctor = DoctorSerializers(read_only=True)
 
     class Meta:
         model = EducationDetailsModel
-        fields = ('id','academic_field_ser', 'doctor', 'university', 'graduation_year', 'country')
+        fields = (
+        'id', 'academic_field', 'academic_field_ser', 'doctor', 'university', 'graduation_year', 'country')
 
     def create(self, validated_data):
         doctor = self.context.get('doctor')
