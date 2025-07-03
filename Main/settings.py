@@ -50,6 +50,7 @@ THIRD_PARTY_APPS = [
     'google',
     'rest_framework_simplejwt.token_blacklist',
     'storages',
+    'celery'
 
 
 ]
@@ -203,3 +204,6 @@ SPECTACULAR_SETTINGS = {
     # 'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
 }
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = "Asia/Tehran"
+CELERY_TASK_TRACK_STARTED = True

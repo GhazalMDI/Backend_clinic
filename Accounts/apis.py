@@ -156,6 +156,7 @@ class ProfileApi(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = UserSerializers
+
     def post(self, request):
         if not request.user or not request.user.is_authenticated:
             return get_Response(success=False, message='لاگین کنید', status=401)
@@ -331,11 +332,6 @@ class ProfileApi(APIView):
             message='the authenticated faild',
         )
 
-
-class ProfileEditDeleteApi(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
     def patch(self, request):
         if request.user and request.user.is_authenticated:
             if user := User.objects.filter(phone_number=request.user).first():
@@ -416,6 +412,12 @@ class ProfileEditDeleteApi(APIView):
             message='unauthorized',
             status=500
         )
+
+
+class ProfileEditDeleteApi(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    serializer_class = UserSerializers
 
     def delete(self, request, pk):
         if request.user and request.user.is_authenticated:
