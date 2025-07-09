@@ -108,13 +108,13 @@ class WorkingHourModel(models.Model):
         ('NOT_ACCEPTED', 'not accepted')
     )
     DAYS = (
-        ('5', 'شنبه'),
-        ('6', 'یکشنبه'),
-        ('0', 'دوشنبه'),
-        ('1', 'سه شنبه'),
-        ('2', 'چهارشنبه'),
-        ('3', 'پنجشنبه'),
-        ('4', 'جمعه')
+        ('1', 'شنبه'),
+        ('2', 'یکشنبه'),
+        ('3', 'دوشنبه'),
+        ('4', 'سه شنبه'),
+        ('5', 'چهارشنبه'),
+        ('6', 'پنجشنبه'),
+        ('7', 'جمعه')
     )
 
     doctor = models.ForeignKey(DoctorModel, on_delete=models.CASCADE, related_name='doctor_working_hours')

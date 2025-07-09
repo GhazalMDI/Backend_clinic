@@ -77,7 +77,7 @@ class AppointmentAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['patient'].queryset = User.object.filter(is_doctor=False)
+        self.fields['patient'].queryset = User.objects.filter(is_doctor=False)
 
     def clean(self):
         cleaned_data = super().clean()

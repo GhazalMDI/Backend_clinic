@@ -92,7 +92,6 @@ class WorkingHourSerializers(serializers.ModelSerializer):
 
 
 class AppointmentSerializers(serializers.ModelSerializer):
-    doctor = DoctorSerializers(read_only=True)
     patient = UserSerializers(read_only=True)
 
     class Meta:
