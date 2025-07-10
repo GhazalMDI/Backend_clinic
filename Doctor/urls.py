@@ -3,5 +3,5 @@ from Doctor import apis
 
 urlpatterns = [
     path('booking/<doctor_id>/<date>/<day>/<time>/<user_id>/', apis.BookingAPIView.as_view()),
-    path('patient/<doctor_id>', apis.PatientAPIView.as_view())
+    path('patientlist/', apis.PatientListAPIView.as_view())
 ]
