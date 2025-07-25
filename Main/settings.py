@@ -50,9 +50,8 @@ THIRD_PARTY_APPS = [
     'google',
     'rest_framework_simplejwt.token_blacklist',
     'storages',
-    'celery'
-
-
+    'celery',
+    'qrcode'
 ]
 LOCAL_APPS = [
     'Home.apps.HomeConfig',

@@ -97,3 +97,9 @@ class AppointmentSerializers(serializers.ModelSerializer):
     class Meta:
         model = AppointmentModel
         fields = '__all__'
+
+    def get_qr_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.qr_image and hasattr(obj.qr_image, 'url'):
+            return request.build_absolute_uri(obj.qr_image.url)
+        return None

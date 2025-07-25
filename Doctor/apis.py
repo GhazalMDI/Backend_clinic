@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.core.exceptions import ValidationError
 
@@ -6,6 +7,7 @@ from Accounts.models import User
 from Doctor.serializers import *
 from utils.book_apoointment import get_available_slots
 from utils.StandardResponse import get_Response
+
 
 
 class BookingAPIView(APIView):
@@ -36,7 +38,7 @@ class PatientListAPIView(APIView):
         if request.user and request.user.is_authenticated:
             if doctor := DoctorModel.objects.filter(user__phone_number=request.user).first():
                 appointment = appointments.filter(doctor_id=doctor)
-                asrz = AppointmentSerializers(appointment,many=True)
+                asrz = AppointmentSerializers(appointment, many=True)
 
                 return get_Response(
                     success=True,
@@ -61,3 +63,14 @@ class PatientListAPIView(APIView):
         )
 
 
+class AppointmentQrAPIView(APIView):
+    def get(self, request, token):
+        appointment = get_object_or_404(AppointmentModel, qr_token=token)
+        serializer = AppointmentSerializers(appointment, context={'request': request})
+        return get_Response(
+            success=True,
+            status=400,
+            data=serializer.data,
+            message="اطلاعات نوبت خدمت شما"
+)
+        # class

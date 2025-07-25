@@ -1,4 +1,8 @@
 import requests
+import uuid
+import qrcode
+from io import BytesIO
+from django.core.files.base import ContentFile
 from django.db import models
 from django_jalali.db import models as jmodel
 
@@ -131,6 +135,24 @@ class AppointmentModel(models.Model):
                                 null=True)
     date = jmodel.jDateField(null=True, blank=True)
     time = models.TimeField(null=True, blank=True)
+    qr_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True, blank=True)
+    qr_image = models.ImageField(upload_to='patient/qr_codes/', blank=True, null=True)
 
     # def __str__(self):
     #     return f'{self.doctor.user.full_name}-{self.patient.first_name} {self.patient.last_name}-{self.date}-{self.time}'
+
+    def get_qr_url(self):
+        return f"http://127.0.0.1:8000/appointments/qr/{self.qr_token}/"
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            super().save(*args, **kwargs)
+
+        qr = qrcode.make(self.get_qr_url())
+        buffer = BytesIO()
+        qr.save(buffer)
+        filename = f'{self.qr_token}.png'
+
+        self.qr_image.save(filename, ContentFile(buffer.getvalue()), save=False)
+
+        super().save(*args, **kwargs)

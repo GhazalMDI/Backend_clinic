@@ -50,7 +50,6 @@ class DoctorModelForm(forms.ModelForm):
         user.is_active = self.cleaned_data.get('is_active')
         user.is_doctor = True
         user.save()
-        # if not doctor_instance:
         doctor_instance.user = user
         if commit:
             doctor_instance.save()
@@ -75,6 +74,7 @@ class AppointmentAdminForm(forms.ModelForm):
         model = AppointmentModel
         fields = ('doctor', 'patient', 'time', 'date')
 
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['patient'].queryset = User.objects.filter(is_doctor=False)
@@ -87,12 +87,16 @@ class AppointmentAdminForm(forms.ModelForm):
         time = self.cleaned_data.get('time')
         try:
             get_available_slots(doctor=doctor_id, patient=patient_id, date=date, time=time)
-
         except ValidationError as e:
-            print(e.message)
             raise forms.ValidationError(e.message)
 
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
 
 
 class CertificateStackedInline(admin.StackedInline):
@@ -175,6 +179,7 @@ class AppointmentModelAdmin(admin.ModelAdmin):
     form = AppointmentAdminForm
     # fields = ('doctor', 'patient', 'date', 'time')
     list_display = ('date', 'time')
+    readonly_fields = ('qr_token',)
 
 
 @admin.register(DoctorDepartmentModel)

@@ -48,10 +48,13 @@ def get_available_slots(doctor, date, patient, time):
         print(start_time)
         print(end_time)
 
-        with transaction.atomic():
-            if overlapping_appointments := AppointmentModel.objects.filter(doctor__id=doctor.id, date=date,time__gte=start_time,time__lt=end_time):
-                    raise ValidationError('این بازه زمانی پر است یا با رزروی دیگر تداخل دارد.')
-            elif not overlapping_appointments:
-                    overlapping_appointments=AppointmentModel.objects.create(doctor=doctor, patient=patient, time=time, date=date)
-        return overlapping_appointments
+        conflict_exists = AppointmentModel.objects.filter(
+            doctor=doctor,
+            date=date,
+            time__gte=start_time,
+            time__lt=end_time
+        ).exists()
+
+        if conflict_exists:
+            raise ValidationError('این بازه زمانی قبلاً رزرو شده یا با نوبت دیگری تداخل دارد.')
 
