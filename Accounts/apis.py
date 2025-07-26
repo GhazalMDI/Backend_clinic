@@ -60,7 +60,7 @@ class RegisterApi(APIView):
             Random_code = randint(100000, 999999)
             OtpModel.objects.create(phone_number=phone_number, random_code=Random_code)
             # print(temp_token)
-            # send_code(phone_number, Random_code)
+            send_code(Random_code,phone_number)
 
             return Response({
                 'success': True,

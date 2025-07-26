@@ -29,12 +29,8 @@ def get_available_slots(doctor, date, patient, time):
             raise ValidationError('در این روز، دکتر در مجموعه حضور ندارد')
         valid_time_found = False
         for work in working_hours:
-            print(time)
-            print('=====s:')
             print(work.start_time)
-            print('=====e:')
             print(work.end_time)
-            print('=====')
             if not (work.start_time) <= time < (work.end_time):
                 valid_time_found = True
                 break

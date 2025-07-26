@@ -6,6 +6,7 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django_jalali.db import models as jmodel
 
+from utils.sms import send_message,send_code
 
 # from Accounts.models import User
 
@@ -154,5 +155,19 @@ class AppointmentModel(models.Model):
         filename = f'{self.qr_token}.png'
 
         self.qr_image.save(filename, ContentFile(buffer.getvalue()), save=False)
-
+    
         super().save(*args, **kwargs)
+        
+        frontend_base_url = "http://localhost:4200/"  # آدرس دامنه‌ی فرانت شما
+        qr_url = f"{frontend_base_url}appointment/qr/{self.qr_token}"
+        # send_message(
+        #       message=f'''سلام {self.patient.first_name} {self.patient.last_name}،
+        #         نوبت شما  در تاریخ {self.date} ثبت شد.
+        #         برای مشاهده جزئیات نوبت به لینک زیر مراجعه فرمایید:
+        #         {qr_url}''',
+        #     phone='09157890381'
+        # )
+        print(f'''سلام {self.patient.first_name} {self.patient.last_name}،
+                نوبت شما  در تاریخ {self.date} ثبت شد.
+                برای مشاهده جزئیات نوبت به لینک زیر مراجعه فرمایید:
+                {qr_url}''')

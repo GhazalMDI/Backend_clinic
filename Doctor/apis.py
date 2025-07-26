@@ -69,8 +69,8 @@ class AppointmentQrAPIView(APIView):
         serializer = AppointmentSerializers(appointment, context={'request': request})
         return get_Response(
             success=True,
-            status=400,
+            status=200,
             data=serializer.data,
             message="اطلاعات نوبت خدمت شما"
 )
-        # class
+      
