@@ -158,16 +158,21 @@ class AppointmentModel(models.Model):
     
         super().save(*args, **kwargs)
         
-        frontend_base_url = "http://localhost:4200/"  # آدرس دامنه‌ی فرانت شما
+        frontend_base_url = "http://localhost:4200/"  
         qr_url = f"{frontend_base_url}appointment/qr/{self.qr_token}"
-        # send_message(
-        #       message=f'''سلام {self.patient.first_name} {self.patient.last_name}،
-        #         نوبت شما  در تاریخ {self.date} ثبت شد.
-        #         برای مشاهده جزئیات نوبت به لینک زیر مراجعه فرمایید:
-        #         {qr_url}''',
-        #     phone='09157890381'
-        # )
-        print(f'''سلام {self.patient.first_name} {self.patient.last_name}،
-                نوبت شما  در تاریخ {self.date} ثبت شد.
-                برای مشاهده جزئیات نوبت به لینک زیر مراجعه فرمایید:
-                {qr_url}''')
+        
+        # پیام به کاربر
+        try:
+            send_message(
+                message=f'''سلام {self.patient.first_name} {self.patient.last_name}،
+                    نوبت شما  در تاریخ {self.date} ثبت شد.
+                    برای مشاهده جزئیات نوبت به لینک زیر مراجعه فرمایید:
+                    {qr_url}''',
+            )
+        except Exception as e:
+            print("خطا در ارسال پیامک:", e)
+
+            print(f'''سلام {self.patient.first_name} {self.patient.last_name}،
+                        نوبت شما  در تاریخ {self.date} ثبت شد.
+                        برای مشاهده جزئیات نوبت به لینک زیر مراجعه فرمایید:
+                        {qr_url}''')
