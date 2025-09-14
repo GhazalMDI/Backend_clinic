@@ -41,6 +41,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'drf_spectacular',
+    'drf_spectacular_sidecar',
     'django_jalali',
     'boto3',
     'dal',
@@ -51,7 +52,8 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'storages',
     'celery',
-    'qrcode'
+    'qrcode',
+    
 ]
 LOCAL_APPS = [
     'Home.apps.HomeConfig',
@@ -204,6 +206,13 @@ SPECTACULAR_SETTINGS = {
     # 'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
 }
+SPECTACULAR_SETTINGS = {
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    # OTHER SETTINGS
+}
+
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_TIMEZONE = "Asia/Tehran"
 CELERY_TASK_TRACK_STARTED = True
